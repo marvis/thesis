@@ -11,94 +11,19 @@
 \maketitle
 \abstract
 \tableofcontents
+\part{Thesis introduction}
 \chapter{Introduction}
 \section{Why bioimage informatics matters}
 \section{Survey of cell tracking}
 \section{My work}
-\chapter{Image segmentation}
-For segmentation based tracking methods, a good segmentation result is very critical which decides the whole tracking quality. Usually the segmentation results of previous frame will be used as the initial segmentation of next frame. So the segmentation of the first frame is very important. The missing-segmentation of an object will be very likely to be miss tracked later. The simplest way to get the initial segmentation of the first frame is thresholding. For the level set based segmentation method, thresholding method is usually used to get the initial segmentation of each object.
-\section{Thresholding method}
-\subsection{Overview}
-In digital image processing, thresholding is the mostly used technique for image segmentation due to its easy usage. Normally the thresholding value is a single value which partitions a grayscale image into foreground and background area. It is offen an effective tool to separate objects from the background and it is always the first tried method before applying other complex segmentation methods. One application of thresholding is document image analysis which aims to extract printed characters \cite{kamel1993extraction,abak1997performance}, graphs, or other items. Examples of thresholding applications lies in all kinds of pre-processing or post-processing steps, including edge detection, image feature extraction, distance transform, skeleton extraction, cell tracking and so on. In practice, thresholding can solve most problems. However, a good thresholding value is required.\\ 
-Although its simplicity, there is no strict defintion for the thresholding of an image. Quite a lot of thresholding techniques \cite{sahoo1988survey, sankur2001image, sezgin2004survey}, more than 44 binary methods, are proposed according to different criterions. Sezgin and Sankur \cite{sankur2001image, sezgin2004survey} categorize thresholding methods into six groups based on different models, that is histogram shape-based methods, clustering-based methods, entropy-based methods, object attribute-based methods, spatial methods, and local methods. Histogram shape-based methods find the thresholding value on histogram data by seperating the peaks and valleys, the representing method is otsu's thresholding method. Clustering-based methods models the foreground and background as a mixture of two gaussians and applys clustering methods to get the two parts. Entropy-based methods utlize the entropy of the foreground and the background regions, as well as the cross-entropy between the original and binarized image, etc. Object attribute-based methods finds a partition which is similar to the gray-level image in some attributes, such as fuzzy shape similarity, edge coincidence, etc. The spatial methods utilize the probability distribution in higher-order and/or correlation between pixels. Local methods calculate a suitable threshold value for each pixel according to the local image characteristics, such as the standard devariance, mean, etc.\\
-As thresholding method is not the main segmentation method in our paper, we only introduce some widely used algorithms. For global thresholding method, otsu's method \cite{otsu1975threshold} is a very elegant method with solid mathematic fomulars by minimize the intra-class variance or maximize inter-class variance. And it is easy to extend otsu's method into multi-thresholding method. For local thresholding, the thresholding is decided by average local gray values and/or standard devariance. 
-\subsection{Global thresholding and Otsu's method}
-Global thresholding converts a grey-level image into binary image by turning all pixels below some threshold to zero and all pixels above that threshold to one. If $g(x,y)$ is a thresholded version of $f(x,y)$ at some global threshold $T$, 
-$$
-g(x,y) = \left\{
-  \begin{array}{ll}
-  1 & \mbox{if } f(x,y) \ge T \\
-  0 & \mbox{otherwise}
-  \end{array}
-  \right.
-$$
-To set a global threshold $T$, we usually analysis the histogram profile by finding a valley that seperates two mountains. One mountain for the foreground and one for the background. The histogram of an image is a probability distribution:
-$$
-p(g) = n_g/n
-$$
-Where, $n_g$ is the number of pixels with intensity $g$, $n$ is the total number of pixels. There are two ways to decide the global threshold, the iterative method and otsu's method. The iterative method contains five steps, see Alg\ref{alg:global-thresh}.\\
-\begin{algorithm}
-\SetAlgoLined
-\KwData{Grey-level image and the histogram}
-\KwResult{The global threshold}
-Estimate the initial threshold $T$ with the mean value.\\
-Divide the image into foreground area $F$ and background area $B$.\\
-Calculate the mean intensity $\mu_f$ and $\mu_b$ for area $F$ and $B$ respectively.\\
-Refresh the threshold $T = (\mu_f + \mu_b)/2$\\
-Repeat 2-4 until $\mu_f$ and $\mu_b$ do not change any more
-\caption{Iterative method for global thresholding}
-\label{alg:global-thresh}
-\end{algorithm}
-The main problem for the iterative method is speed. The step for segmenting an image into foreground and background for many times is time consuming. Otsu \cite{otsu1975threshold} proposed a method based on selecting the lowest point between two classes. The selected point will minimize the intra-class variance or maximize the inter-class. The intra-class variance is defined as the weighted sum of variances of the foreground area and background area.
-\begin{equation} \label{eq:intra-var}
-\sigma_w^2(t) = w_b(t)\sigma_b^2(t) + w_f\sigma_f^2(t)
-\end{equation}
-where $w_f$ and $w_b$ are the probabilities of the two classes seperated by threshold $t$, $\sigma_f^2$ and $\sigma_b^2$ are the variance of foreground and background regions.\\
-Further, Otsu demonstrate that minimizing the intra-class variance is the same as maximizing inter-class variaces:
-\begin{equation} \label{eq:inter-var}
-\sigma_b^2(t) = \sigma_T^2 - \sigma_w^2(t) = w_f(t)w_b(t)[\mu_f(t) - \mu_b(t)]^2
-\end{equation}
-where $\sigma_T^2$ is the total variance of the whole image, $\mu_f$ and $\mu_b$ are the mean intensity of foreground and background regions. Here $w_b(t) = \sum_0^tp(i)$, $w_f(t) = 1 - w_b(t)$, $\mu_b(t) = \sum_0^tp(i)x(i)/w_b(t)$, and $\mu_f = (\mu_T - \mu_b(t)w_b(t))/w_f(t)$\\
-By using fomular \ref{eq:inter-var}, the Otsu's method could be designed as dynamic algorithm, and thus will be very fast. The equations for dynamic otsu's method is as follows, 
-\begin{equation} \label{eq:otsu-dynamic}
-\begin{array}{lll}
-	w_b(t) & = & w_b(t-1) + p(t) \\
-	w_f(t) & = & \mu_T - \mu_b(t)w_b(t) \\
-	\mu_b(t) & = & (\mu_b(t-1)w_b(t-1) + p(t)x(t))/w_b(t)\\
-	\mu_f(t) & = & (\mu_T - \mu_b(t)w_b(t))/w_f(t)
-\end{array}
-\end{equation}
-Where $\mu_T$ is the average intensity of the whole image. See alg.\ref{alg:otsu-thresh} for the details. If there are multiple maximum $\sigma_b(t)^2$, the thresold value can be set as the average of them.
-\begin{algorithm}
-\SetAlgoLined
-\KwData{Grey-level image and the histogram}
-\KwResult{The global threshold}
-Compute the histogram and probabilities $p(g)$ for each intensity level $g$\\
-Initilize $w_i(0)$ and $\mu_i(0)$\\
-Step through all possible thresholds one by one, compute $\sigma_b(t)^2$ according to eqn.\ref{eq:inter-var} and eqn.\ref{eq:otsu-dynamic}\\
-Find the threshold correspond to the maximum $\sigma_b^2(t)$
-\caption{Otsu's method for global thresholding}
-\label{alg:otsu-thresh}
-\end{algorithm}
-\subsection{Local thresholding method}
-The major problem with global thresholding is that it considers only the intensity, not any relationships between the pixels or any local characteric. The global thresholding can't handle changing illumination. It can give poor results for certain types of images. And the pixels identified by the thresholding process are not at all continuous. By applying local approach, we can overcome some of the problems.\\
-Local thresholding divide an image into sub-images by a sliding window. For each sub-image, we find its global threshold. If the region is constant, consider it against a global threshold (all black or white). If there is sufficient variance, use Otsu/Iterative method in the window. \\
-Generally speaking, the local threshold is set according to the local mean and local variance.
-$$
-T_{local} = a\cdot\mu_{local} + b\cdot\sigma_{local}
-$$
-in which the coefficient $a$ for $\mu_{local}$ and the coefficient $b$ for $\sigma_{local}$ is decided according the illumiation gradience or by experience.
-\subsection{Component tree based thresholding}
-When the image is slightly complex, the limitation of thresholding methods becomes very obvious. We always can't use a single threshold to get the objects we are interested, especially when there are multiply objects, where each object lies in different gray levels. In such case, some objects will get miss-segmented or half-segmented. Another example is when the background is not evenly distributed, such as vignetting background, which is due to uneven illumination, or linear background. One single threshold will inevitably divide the background area into foreground area.\\
-Even though the local thresholding can overcome some of the problem in global thresholding, but it is not easy to decide the size of sliding windows and the coefficients. In our paper, we use a much advanced method which considers all possible thresholds. We will get all possible connected-component in different threshols. The relationship between connected-component is either inclusion or non-overlap. So we can build a tree, called component tree, to manage the relationship for all connected-component. \\
-With component tree, we don't have to bother about the best threshold. We can filter out the components with certain size, which is obtained from a piori knowledge. The details about component tree will be introduce in chapter 3.
-\section{Level set method}
-\section{Graph cut method}
-\chapter{Component Tree}
-\chapter{Tree assignment methods}
-\chapter{Cell tracking}
-based on \cite{Xiao:2011}
-\chapter{Evalution and Conclusion}
+\part{Cell Tracking}
+\input{chapter1} % chapter1: image segmentation
+\input{chapter2} % chapter2: component tree
+\input{chapter3} % chapter3: Tree assignment methods
+\input{chapter4} % chapter4: cell tracking methods
+\part{Neuron Tracing}
+\input{chapter5}
+\input{chapter6}
 \bibliographystyle{plain}
 \bibliography{thesis}
 
