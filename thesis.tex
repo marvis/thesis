@@ -36,7 +36,7 @@ To set a global threshold $T$, we usually analysis the histogram profile by find
 $$
 p(g) = n_g/n
 $$
-Where, $n_g$ is the number of pixels with intensity $g$, $n$ is the total number of pixels. There are two ways to decide the global threshold, the iterative method and otsu's method. The iterative method contains five steps, see alg.\ref{alg:global-thresh}.\\
+Where, $n_g$ is the number of pixels with intensity $g$, $n$ is the total number of pixels. There are two ways to decide the global threshold, the iterative method and otsu's method. The iterative method contains five steps, see Alg.\ref{alg:global-thresh}.\\
 \begin{algorithm}
 \SetAlgoLined
 \KwData{Grey-level image and the histogram}
@@ -49,22 +49,37 @@ Repeat 2-4 until $\mu_f$ and $\mu_b$ do not change any more
 \caption{Iterative method for global thresholding}
 \label{alg:global-thresh}
 \end{algorithm}
-The main problem for the iterative method is speed. The step for segmenting an image into foreground and background for many times is time consuming. Otsu \cite{otsu1975threshold} proposed a method based on selecting the lowest point between two classes. The selected point will minimize the intra-class variance or maximize the inter-class. The intra-class variance is defined as the weighted sum of variances of the foreground area and background area.\\
-$$
+The main problem for the iterative method is speed. The step for segmenting an image into foreground and background for many times is time consuming. Otsu \cite{otsu1975threshold} proposed a method based on selecting the lowest point between two classes. The selected point will minimize the intra-class variance or maximize the inter-class. The intra-class variance is defined as the weighted sum of variances of the foreground area and background area.
+\begin{equation} \label{eq:intra-var}
 \sigma_w^2(t) = w_b(t)\sigma_b^2(t) + w_f\sigma_f^2(t)
-$$
-where $w_f$ and $w_b$ are the probabilities of the two classes seperated by threshold $t$.
-
+\end{equation}
+where $w_f$ and $w_b$ are the probabilities of the two classes seperated by threshold $t$, $\sigma_f^2$ and $\sigma_b^2$ are the variance of foreground and background regions.\\
+Further, Otsu demonstrate that minimizing the intra-class variance is the same as maximizing inter-class variaces:
+\begin{equation} \label{eq:inter-var}
+\sigma_b^2(t) = \sigma_T^2 - \sigma_w^2(t) = w_f(t)w_b(t)[\mu_f(t) - \mu_b(t)]^2
+\end{equation}
+where $\sigma_T^2$ is the total variance of the whole image, $\mu_f$ and $\mu_b$ are the mean intensity of foreground and background regions. Here $w_b(t) = \sum_0^tp(i)$, $w_f(t) = 1 - w_b(t)$, $\mu_b(t) = \sum_0^tp(i)x(i)/w_b(t)$, and $\mu_f = (\mu_T - \mu_b(t)w_b(t))/w_f(t)$\\
+By using fomular \ref{eq:inter-var}, the Otsu's method could be designed as dynamic algorithm, and thus will be very fast. 
+\begin{equation} \label{eq:otsu-dynamic}
+\begin{array}{lll}
+	w_b(t) & = & w_b(t-1) + p(t) \\
+	w_f(t) & = & \mu_T - \mu_b(t)w_b(t) \\
+	\mu_b(t) & = & (\mu_b(t-1)w_b(t-1) + p(t)x(t))/w_b(t)\\
+	\mu_f(t) & = & (\mu_T - \mu_b(t)w_b(t))/w_f(t)
+\end{array}
+\end{equation}
+see Alg.\ref{alg:otsu-thresh}.
 \begin{algorithm}
 \SetAlgoLined
 \KwData{Grey-level image and the histogram}
 \KwResult{The global threshold}
 Compute the histogram and probabilities $p(g)$ for each intensity level $g$\\
 Initilize $w_i(0)$ and $\mu_i(0)$\\
+Step through all possible thresholds one by one, compute $\sigma_b(t)^2$ according to eqn.\ref{eq:inter-var} and eqn.\ref{eq:otsu-dynamic}\\
+Find the threshold correspond to the maximum $\sigma_b^2(t)$
 \caption{Otsu's method for global thresholding}
 \label{alg:otsu-thresh}
 \end{algorithm}
-
 \subsection{Local thresholding method}
 The major problem with global thresholding is that it considers only the intensity, not any relationships between the pixels. The pixels identified by the thresholding process are continuous. The global thresholding 
 \subsection{Component tree based thresholding}
