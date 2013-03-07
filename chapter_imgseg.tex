@@ -1,5 +1,6 @@
 \chapter{Image segmentation}
-For segmentation based tracking methods, a good segmentation result is very critical which decides the whole tracking quality. Usually the segmentation results of previous frame will be used as the initial segmentation of next frame. So the segmentation of the first frame is very important. The missing-segmentation of an object will be very likely to be miss tracked later. The simplest way to get the initial segmentation of the first frame is thresholding. For the level set based segmentation method, thresholding method is usually used to get the initial segmentation of each object.
+For the cell tracking methods which seperate the segmentation and association steps, the segmentation quality influences the whole tracking result significantly. A good segmentation for the objects in each frame is very important especially in the very early frames. Because the segmentation results of priori frame affects the segmentation results of later frames, that the missing-segmentation of an object will be very likely to be miss tracked in later frames.\\
+Image segmentation are basically ad-hoc problems. Different segmentation emphasize one or more of the desired properites. During the past 40 years, hundreds of segmentation algorithms have been proposed\cite{freixenet2002yet}. In this chapter, we will introduce some basic segmentation methods and the most complex segmentation models in recent years, based on thresholding, boundary and region information.
 \section{Thresholding method}
 \subsection{Overview}
 In digital image processing, thresholding is the mostly used technique for image segmentation due to its easy usage. Normally the thresholding value is a single value which partitions a grayscale image into foreground and background area. It is offen an effective tool to separate objects from the background and it is always the first tried method before applying other complex segmentation methods. One application of thresholding is document image analysis which aims to extract printed characters \cite{kamel1993extraction,abak1997performance}, graphs, or other items. Examples of thresholding applications lies in all kinds of pre-processing or post-processing steps, including edge detection, image feature extraction, distance transform, skeleton extraction, cell tracking and so on. In practice, thresholding can solve most problems. However, a good thresholding value is required.\\ 
@@ -19,7 +20,9 @@ To set a global threshold $T$, we usually analysis the histogram profile by find
 $$
 p(g) = n_g/n
 $$
-Where, $n_g$ is the number of pixels with intensity $g$, $n$ is the total number of pixels. There are two ways to decide the global threshold, the iterative method and otsu's method. The iterative method contains five steps, see Alg\ref{alg:global-thresh}.\\
+Where, $n_g$ is the number of pixels with intensity $g$, $n$ is the total number of pixels. There are two ways to decide the global threshold, the iterative method and otsu's method. \\
+\textbf{Iterative method :} This method compute the global threshold from the initial mean intensity value, then iterative replace the threshold value by the average mean intensity of the foreground and the background regions. See alg\ref{alg:global-thresh} for details of this method.\\
+The main problem for the iterative method is speed. The step for segmenting an image into foreground and background for many times is time consuming.\\
 \begin{algorithm}
 \SetAlgoLined
 \KwData{Grey-level image and the histogram}
@@ -32,7 +35,7 @@ Repeat 2-4 until $\mu_f$ and $\mu_b$ do not change any more
 \caption{Iterative method for global thresholding}
 \label{alg:global-thresh}
 \end{algorithm}
-The main problem for the iterative method is speed. The step for segmenting an image into foreground and background for many times is time consuming. Otsu \cite{otsu1975threshold} proposed a method based on selecting the lowest point between two classes. The selected point will minimize the intra-class variance or maximize the inter-class. The intra-class variance is defined as the weighted sum of variances of the foreground area and background area.
+\textbf{Otsu's method : } Otsu \cite{otsu1975threshold} proposed a method based on selecting the lowest point between two classes. The selected point will minimize the intra-class variance or maximize the inter-class. The intra-class variance is defined as the weighted sum of variances of the foreground area and background area.
 \begin{equation} \label{eq:intra-var}
 \sigma_w^2(t) = w_b(t)\sigma_b^2(t) + w_f\sigma_f^2(t)
 \end{equation}
@@ -74,7 +77,70 @@ in which the coefficient $a$ for $\mu_{local}$ and the coefficient $b$ for $\sig
 \subsection{Component tree based thresholding}
 When the image is slightly complex, the limitation of thresholding methods becomes very obvious. We always can't use a single threshold to get the objects we are interested, especially when there are multiply objects, where each object lies in different gray levels. In such case, some objects will get miss-segmented or half-segmented. Another example is when the background is not evenly distributed, such as vignetting background, which is due to uneven illumination, or linear background. One single threshold will inevitably divide the background area into foreground area.\\
 Even though the local thresholding can overcome some of the problem in global thresholding, but it is not easy to decide the size of sliding windows and the coefficients. In our paper, we use a much advanced method which considers all possible thresholds. We will get all possible connected-component in different threshols. The relationship between connected-component is either inclusion or non-overlap. So we can build a tree, called component tree, to manage the relationship for all connected-component. \\
-With component tree, we don't have to bother about the best threshold. We can filter out the components with certain size, which is obtained from a piori knowledge. The details about component tree will be introduce in chapter 3.
-\section{Level set method}
+With component tree, we don't have to bother about the best threshold. We can filter out the components with certain size, which is obtained from a piori knowledge. The details about component tree will be introduce in chapter \ref{chapter:cptree}.
+\section{Snake: Active contour method}
+\subsection{Overview}
+The active contour model\cite{kass1988snakes} (also called snake model) is popular in computer vision, which finds the object boundarys either continous or non-continuous. It is greatly used in application like image segmentation, object tracking, shape recognition, edge detection, and stereo matching.\\
+A snake in the image is a lot of discrete points, which is called a spline.
+$$
+v_i = (x_i, y_i)
+$$
+where $i=0\ldots n-1$. The snake is guided by many forces which maybe external forces from the image gradience or the internal forces from the snake curve itself. When balance, the snake will be guided to the image boundaris and stopped.\\
+To describe the snake state, each state (position) of the snake has an energy, which is the sum of external energy and internal energy, corresponding to it. The internal energy $E_{int}$ of the spline (snake) is due to bending. Then external energy $E_{ext}$ consist of the image forces $E_{img}$ acting on spline and the constrainted forces $E_{con}$ introduced by user. \\
+$$
+E_{snake} = \int_0^1E_{snake}(v(s))ds = \int_0^1(E_{ext} + E_{int})ds
+$$
+$$
+E_{ext} = E_{img} + E_{con}
+$$
+\textbf{Internal energy: } The bending forces of the snake come from the curve length and curve curvature.
+\begin{equation}\label{eqn:int-energy}
+E_{int} = (\alpha(s)|v_s(s)|^2 + \beta(s)|v_{ss}(s)|^2)/2
+\end{equation}
+where $\alpha(s)$ and $\beta(s)$ controls the energy sensitive to snake stretching and curve roundness, $|v_s(s)|^2$ represents the snake length and $|v_{ss}(s)|^2$ represents the total curvature. The larger the value of $\alpha(s)$, the more sensitive of the internal energy as the snake stretches. And the larger the value of $\beta(s)$, the more sensitive of the internal enerygy as the curve increase.
+\textbf{Image forces: } The forces has three components that is lines, edges and terminations.
+$$
+E_{img} = w_{line}E_{line} + w_{edge}E_{edge} + w_{term}E_{term}
+$$
+The line component is just the intensity of the image.
+$$
+E_{line} = I(x,y)
+$$
+Edges in the images will make the snake attract to the area with large image gradients.
+$$
+E_{edge} = -|\nabla I(x,y)|^2
+$$
+Or the edge computed on the gaussian blured image,
+$$
+E_{edge} = -|G_\sigma \cdot \nabla^2 I|^2
+$$
+The termination component of energy can be defined as
+$$
+E_{term} = \frac{\partial \theta}{\partial n_\perp} = \frac{C_{yy}C_x^2 - 2C_{xy}C_xC_y + C_{xx}C_y^2}{(C_x^2 + C_y^2)^{3/2}}
+$$
+where $C(x,y)$ is the gaussian smoothed image on $I(x,y)$, $C_x$ and $C_y$ are gradient along $x$ and $y$, $C_{xx}$, $C_{xy}$, and $C_{yy}$ are second order gradients. This component is used to detect corners and terminations in an image.\\
+\textbf{Constraint energy: } In some systems, the user interaction on the snake can guide the snake towards or away from particular features. 
+\subsection{Energy minimization model}
+The snake will move toward the energy decreasing direction. One of the simplest optimization method is gradient-descent minization\cite{snyman2005practical}. The energy of the snake can be estimated by using the discrete points on the snake. 
+$$
+E_{snake} \approx \sum_1^nE_{snake}(\bar{v}_i)
+$$
+Thus the devirative of the energy is approximate to
+$$
+\nabla E_{snake} \approx \sum_1^n \nabla E_{snake}(\bar{v}_i)
+$$
+Now applying the gradient descent minimization, the position of the snake is adjust as,
+$$
+\bar{v}_i = \bar{v}_i - \nabla E_{snake}(\bar{v}_i)
+$$
+This equation is applied iteratively until the energy doesn't change.
+\section{Level set based segmentation}
+\subsection{Overview}
+\subsection{Chan-vese model}
+\subsection{Multi-objects segmentation model}
+\subsection{My work}
 \section{Graph cut method}
-
+\section{Open-source librarys}
+\subsection{ITK}
+\subsection{OpenCV}
+\subsection{My work}
