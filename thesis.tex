@@ -36,7 +36,7 @@ To set a global threshold $T$, we usually analysis the histogram profile by find
 $$
 p(g) = n_g/n
 $$
-Where, $n_g$ is the number of pixels with intensity $g$, $n$ is the total number of pixels. There are two ways to decide the global threshold, the iterative method and otsu's method. The iterative method contains five steps, see Alg.\ref{alg:global-thresh}.\\
+Where, $n_g$ is the number of pixels with intensity $g$, $n$ is the total number of pixels. There are two ways to decide the global threshold, the iterative method and otsu's method. The iterative method contains five steps, see Alg\ref{alg:global-thresh}.\\
 \begin{algorithm}
 \SetAlgoLined
 \KwData{Grey-level image and the histogram}
@@ -59,7 +59,7 @@ Further, Otsu demonstrate that minimizing the intra-class variance is the same a
 \sigma_b^2(t) = \sigma_T^2 - \sigma_w^2(t) = w_f(t)w_b(t)[\mu_f(t) - \mu_b(t)]^2
 \end{equation}
 where $\sigma_T^2$ is the total variance of the whole image, $\mu_f$ and $\mu_b$ are the mean intensity of foreground and background regions. Here $w_b(t) = \sum_0^tp(i)$, $w_f(t) = 1 - w_b(t)$, $\mu_b(t) = \sum_0^tp(i)x(i)/w_b(t)$, and $\mu_f = (\mu_T - \mu_b(t)w_b(t))/w_f(t)$\\
-By using fomular \ref{eq:inter-var}, the Otsu's method could be designed as dynamic algorithm, and thus will be very fast. 
+By using fomular \ref{eq:inter-var}, the Otsu's method could be designed as dynamic algorithm, and thus will be very fast. The equations for dynamic otsu's method is as follows, 
 \begin{equation} \label{eq:otsu-dynamic}
 \begin{array}{lll}
 	w_b(t) & = & w_b(t-1) + p(t) \\
@@ -68,7 +68,7 @@ By using fomular \ref{eq:inter-var}, the Otsu's method could be designed as dyna
 	\mu_f(t) & = & (\mu_T - \mu_b(t)w_b(t))/w_f(t)
 \end{array}
 \end{equation}
-see Alg.\ref{alg:otsu-thresh}.
+Where $\mu_T$ is the average intensity of the whole image. See alg.\ref{alg:otsu-thresh} for the details. If there are multiple maximum $\sigma_b(t)^2$, the thresold value can be set as the average of them.
 \begin{algorithm}
 \SetAlgoLined
 \KwData{Grey-level image and the histogram}
@@ -81,9 +81,17 @@ Find the threshold correspond to the maximum $\sigma_b^2(t)$
 \label{alg:otsu-thresh}
 \end{algorithm}
 \subsection{Local thresholding method}
-The major problem with global thresholding is that it considers only the intensity, not any relationships between the pixels. The pixels identified by the thresholding process are continuous. The global thresholding 
+The major problem with global thresholding is that it considers only the intensity, not any relationships between the pixels or any local characteric. The global thresholding can't handle changing illumination. It can give poor results for certain types of images. And the pixels identified by the thresholding process are not at all continuous. By applying local approach, we can overcome some of the problems.\\
+Local thresholding divide an image into sub-images by a sliding window. For each sub-image, we find its global threshold. If the region is constant, consider it against a global threshold (all black or white). If there is sufficient variance, use Otsu/Iterative method in the window. \\
+Generally speaking, the local threshold is set according to the local mean and local variance.
+$$
+T_{local} = a\cdot\mu_{local} + b\cdot\sigma_{local}
+$$
+in which the coefficient $a$ for $\mu_{local}$ and the coefficient $b$ for $\sigma_{local}$ is decided according the illumiation gradience or by experience.
 \subsection{Component tree based thresholding}
-When the image is slightly complex, the limitation of thresholding methods becomes very obvious. We always can't use a single threshold to get the objects we are interested, especially when there are multiply objects, where each object lies in different gray levels. In such case, some objects will get miss-segmented or half-segmented. Another example is when the background is not evenly distributed, such as vignetting background, which is due to uneven illumination, or linear background. One single threshold will inevitably divide the background area into foreground area.
+When the image is slightly complex, the limitation of thresholding methods becomes very obvious. We always can't use a single threshold to get the objects we are interested, especially when there are multiply objects, where each object lies in different gray levels. In such case, some objects will get miss-segmented or half-segmented. Another example is when the background is not evenly distributed, such as vignetting background, which is due to uneven illumination, or linear background. One single threshold will inevitably divide the background area into foreground area.\\
+Even though the local thresholding can overcome some of the problem in global thresholding, but it is not easy to decide the size of sliding windows and the coefficients. In our paper, we use a much advanced method which considers all possible thresholds. We will get all possible connected-component in different threshols. The relationship between connected-component is either inclusion or non-overlap. So we can build a tree, called component tree, to manage the relationship for all connected-component. \\
+With component tree, we don't have to bother about the best threshold. We can filter out the components with certain size, which is obtained from a piori knowledge. The details about component tree will be introduce in chapter 3.
 \section{Level set method}
 \section{Graph cut method}
 \chapter{Component Tree}
