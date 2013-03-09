@@ -3,7 +3,9 @@ Componet tree is one of the main topic in my thesis for cell tracking. In my cel
 Before component tree assignment, we need to compute the weights between every pair of nodes in two component trees. This step is extremely time consuming, which is once a bottle-neck of our cell tracking algorithm. However, we proposed a fast dynamic algorithm which enables a quasi-linear running time from $O(|T1|\cdot|T2|\cdot N)$ to $O(N)$.
 \section{Component tree construction}
 \subsection{Component tree definition}
-A component tree $T$ can be described as $T=(V, E)$, where $V$ is the set of nodes (or component nodes) in tree $T$, and $E$ is the inclusion relationship between component nodes. Each component node is mapped to a connected area under some threshold. The relationship between any two component nodes is either inclusion or non-overlaping. Fig.\ref{fig:cptree-example} shows the component tree of an very simple image, by considering five different threshold values.
+A component tree $T$ can be described as $T=(V, E)$, where $V$ is the set of nodes (or component nodes) in tree $T$, and $E$ is the inclusion relationship between component nodes. Each component node is mapped to a connected area (or connected component or just component) under some threshold. The relationship between any two component nodes is either inclusion or non-overlaping. However, we only consider the relationship between two nodes $u$ and $v$. That is if area of $u$ includes area of $v$, there will be no other node whose area includes area of $v$ or is included by area of $u$. Fig.\ref{fig:cptree-example} shows the component tree of an very simple image, by considering five different threshold values.
+
+In pratice, a component tree usually considers all threshold values with all possible connected components, which is called a \emph{full component tree}.
 
 \begin{figure}[htbp]
 \centering
@@ -12,11 +14,76 @@ A component tree $T$ can be described as $T=(V, E)$, where $V$ is the set of nod
 \label{fig:cptree-example}
 \end{figure}
 \subsection{The $\alpha$ and $\beta$ area}
-\subsection{Disjoint-set data structure}
+Each node in the component tree is mapped to a connected area, which is denoted as its $\beta$ area. As the $\beta$ area includes the $\beta$ areas of all its child nodes, we can define the $\alpha$ area of a node which is its $\beta$ area exclusive of all its child nodes. Thus, for each node $v$, we have
+$$
+\beta(v) = \alpha(v)\cup\bigcup_{v_i \in C(v)} \beta(v_i)   
+$$
+$$
+\alpha(v) = \beta(v) - \sum_{v_i\in C(v)}\beta(v_i)
+$$
+where $C(v)$ is all child nodes of $v$, $v_i$ is the $i_{th}$ child node of $v$. 
+
+We can find the lowest intensity in the connected component which is called the \emph{level of the connected component}. Thereby, the $\alpha$ area of a component can also be defined as the set of pixels with intensity equal to the level of the component.
+$$
+\alpha(v) = \{p \in \beta(v)| I(p) = level(v)\}
+$$
+
+It is easy to prune that the $\alpha$ area of all possible component nodes is a partition of the whole image.
+$$
+\bigcup \alpha(v) = I
+$$
+
+As there is no overlap between the $\alpha$ area of any pair of nodes, each image pixel can be mapped to a component node uniquely. See fig.\ref{fig:cptree-alpha}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=1.0\textwidth]{images/cptree_alpha}
+\caption{(a) the grayscale image is segmented from level one to level four. (b) The component tree of F. (c) the mapping from pixels to component node.}
+\label{fig:cptree-alpha}
+\end{figure}
+
 \subsection{Quasi-linear algorithm}
+The process of constructing component tree is a process of partition the image into many un-overlapping areas ($\alpha$ areas) with relationship. According to this idea, Najman and Couprie\cite{najman2006building} proposed a quasi-linear time to construct a component tree. They utilize the disjoint-set data structure,  to represent the discreted $\alpha$ areas.
+
+The algorithm needs only one searching of all image pixels in the order of there intensity from highest to lowest. Initially every image pixel is mapped to a disjoint set (element) with parent to itself. And each disjoint set is mapped to a component node with only one pixel, both for its $\alpha$ area and $\beta$ area and no child node. That's to see, each image pixel is mapped to a component node through its mapped disjoint set.
+
+When one image pixel with intensity $T$ is processed, we will first find its corresponding disjoint set and component node, see \emph{current component node}; then we check its neighboring pixels. If the neighboring pixel is of intensity larger than $T$, add the component node of the neighboring pixel to the child of current component node. If the neighboring pixel is of equal intensity to $T$, we merge both the disjoint set and child component nodes of both pixles. See alg.\ref{alg:cptree-quasi} for algorithm details.
+
+\textbf{Implementation: } During the implementation, I find it hard to get the elements of a disjoint set (or the $\alpha$ area) with only parent and rank information. However, by adding a next node information, wo solve the problem. The next node information link all the elements of a set in a loop, which enabls geting the whole set from any element.
+
+\textbf{Running time: } Let $N$ denotes the number of image pixels. The first step is sorting the image pixels. It can be done in $O(N)$ if the weights are small integers \cite{cormen2001introduction}. In the looping, both adding childs and merging childs and merging disjoint set can be done in constant time. So the total running time is quasi-linear of $O(N)$.
+
+\begin{algorithm}[H]
+\SetAlgoLined
+\KwData{An image $I(x,y)$}
+\KwResult{A component tree of the image}
+Sort the image pixels from highest to lowest\;
+Create a disjoint set for each image pixel, and build the mapping $pixel2djs$ from image pixel to disjoint set\;
+Create a component node for each disjoint set, and build the mapping $djs2node$ from the disjoint set to the component node\;
+\ForEach{pixel in sorting order}{
+	Find the intensity $T$ of current pixel\;
+	Find the disjoint set $cur\_djs$ of current pixel from $pixel2djs$ mapping\;
+	Find the component node $cur\_node$ of $cur\_djs$ from $djs2node$ mapping\;
+	\ForEach{pixel neighbors to current pixel}{
+		Find the intensity $T'$ for the neighboring pixel\;
+		Find the disjoint set $nei\_djs$ of neighboring pixel from $pixel2djs$ mapping\;
+		Find the component node $nei\_node$ of $nei\_djs$ from $djs2node$ mapping\;
+		\If{$T' > T$}{
+			Add $nei\_node$ as a child of $cur\_node$\;
+		}
+		\ElseIf{$T' == T$}{
+			Merge $nei\_djs$ to $cur\_djs$ by union-find algorithm\;
+			Delete the mapping of $nei\_djs$ in $djs2node$ mapping\;
+			Add all the childs of $nei\_node$ to the childs of $cur\_node$\;
+			Delete $nei\_node$\;
+		}
+	}
+}
+
+\end{algorithm}
+
 \section{Component tree pruning}
 Each image is uniquely mapped to a component tree, and vice versa. Usually the constructed component tree is extremly large (133187 nodes for a microglia image of size 156x250x34). But the tree assignment step only tolerant a tree of size about 200. It is absolutly necessary to prune the component tree before moving into next step.\\
-To make the concept clear, the component tree constructed from an image without pruning is called a full component tree.
 \subsection{Redundancy rate}
 The redundancy rate of a component tree is defined as the ratio between the size of component tree and that of its corresponding image. For an image of size $N$. The maximum redundancy rate is 100\% when each pixel maps to a component node. The minimum redundancy rate is $1/N$ when there is only one node in the tree with the pixels of the whole image. For the microglia above, 133187 nodes for an image of size 156x250x34, the redundancy rate is 10.04\%.\\
 The redundancy rate reflects the structure complexity of an image. High redundancy indicates an nosiy image with many small components, whereas low rendundancy indicate a clear image with few big components. However, for a component tree with high redundancy rate, a proper pruning process could lower the redundancy rate and make the main structure, the objects that we are interested, clearlly represent in the pruned component tree.
@@ -156,3 +223,37 @@ less than $500$, as observed in \cite{Xiao:2011}.
 Usually, for large images, we have $\avg_{v\in V}(|\alpha(v)|) > |V|$, so $|V|^2
 \ll |P|$. Under these circumstances, the total running time, dominated by the
 number of pixels, is quasi-linear w.r.t $|P|$.
+
+\begin{algorithm}[H]
+\SetAlgoLined
+\KwData{Component tree $S$ and $T$ with $\alpha$ size and $\beta$ size}
+\KwResult{All pair of weights between nodes and $S$ and nodes in $T$}
+Compute post-order enumerations of the nodes in $S$ and $T$ as $u_1,\ldots,u_n$ and $v_1, \ldots, v_m$, respectively\;
+\emph{\{$\alpha\alpha$ weights calculatiion\}}\;
+Initialize all $\alpha\alpha(u,v)$ to 0\;
+\ForEach{pixel $p \in P$ do}{
+  $u := \alpha_1^{-1}(p)$\;
+  $v := \alpha_2^{-1}(p)$\;
+  increase $\alpha\alpha(u,v)$ by one\;
+}
+\emph{\{$\alpha\beta$ weights calculatiion\}}\;
+\For {$i$ from 1 to $n$ }{
+	\For {$j$ from 1 to $m$}{
+		Initialize $\alpha\beta(u_i,v_j)$ to $\alpha(u_i,v_j)$\;
+		\ForEach {child $c \in C(v_j)$}{
+		  $\alpha\beta(u_i,v_j) := \alpha\beta(u_i,v_j) + \alpha\beta(u_i, c)$\;
+		}
+	}
+}
+\emph{$\beta\beta$ weights and Jaccard index calculation}\;
+\For {$i$ from 1 to $n$}{
+  \For {$j$ from 1 to $m$}{
+  	Initialize $\beta\beta(u_i,v_j)$ to $\alpha\beta(u_i,v_j)$\;
+	\ForEach{child $c \in C(u_i)$}{
+	  $\beta\beta(u_i,v_j) := \beta\beta(u_i,v_j) + \beta\beta(c,v_j)$\;
+	}
+  }
+}
+\caption{Computing all overlap weights between component trees $S$ and $T$}
+\label{alg:cptree-weights}
+\end{algorithm}
