@@ -195,7 +195,19 @@ P = \bigcup_{v \in V}\alpha(v)
 This allows us to define a reverse mapping of $\alpha^{-1}: P \to V$ that
 identifies for each pixel $p\in P$, the unique vertex $v$ that satisfying
 $p\in\alpha(v)$.  This reverse mapping allows us to calculate all
-$\alpha\alpha(u,v)$ in time $O(|P|)$.
+$\alpha\alpha(u,v)$ in time $O(|P|)$. Fig.\ref{fig:cptree-aaweight} illustrates
+the decomposition of $\alpha\alpha$ weight calculating.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=1.0\textwidth]{images/cptree_aaweight}
+\caption{The decomposition of $\alpha\alpha$ weights between two simple component
+trees. A. The compents of two images. B. The component trees of the two images. 
+The small case denotes the component node, whereas the large case denotes the $\alpha$
+area. C. The overlapping $\alpha\alpha$ areas. Each image pixel is mapped to a 
+component node in both component tree.}
+\label{fig:cptree-aaweight}
+\end{figure}
 
 Based on the above recurrence relations, both $\beta\beta(u,v)$ and
 $\alpha\beta(u,v)$ can be calculated in a dynamic programming fashion by
