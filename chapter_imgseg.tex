@@ -92,6 +92,7 @@ When the image is slightly complex, the limitation of thresholding methods becom
 Even though the local thresholding can overcome some of the problem in global thresholding, but it is not easy to decide the size of sliding windows and the coefficients. In our paper, we use a much advanced method which considers all possible thresholds. We will get all possible connected-component in different threshols. The relationship between connected-component is either inclusion or non-overlap. So we can build a tree, called component tree, to manage the relationship for all connected-component. 
 
 With component tree, we don't have to bother about the best threshold. We can filter out the components with certain size, which is obtained from a piori knowledge. The details about component tree will be introduce in chapter \ref{chapter:cptree}.
+\section{Watershed methods}
 \section{Snake: Active contour method}
 \subsection{Overview}
 The active contour model\cite{kass1988snakes} (also called snake model) is popular in computer vision, which finds the object boundarys either continous or non-continuous. It is greatly used in application like image segmentation, object tracking, shape recognition, edge detection, and stereo matching.
@@ -153,7 +154,24 @@ $$
 \bar{v}_i = \bar{v}_i - \nabla E_{snake}(\bar{v}_i)
 $$
 This equation is applied iteratively until the energy doesn't change.
-\subsection{Implementation}
+\subsection{Other implementations}
+The classic snake modes which driven the snake towards object contours depends very much on the initial snake position.
+The initial snake position should be close to the object or intercross with object boundary. Otherwise, the snake may
+get stuck in local minima states and mis-finding the object. To overcome the initial position problem, many variations
+based on snake model are proposed.
+
+\textbf{GVF active contours: } In normal snake modes, the diffuse forces exist only on the object boundary. This 
+makes the snake hard to converge to the object boundary. Due to this reason, the GVF active contour proposed a way to diffuse
+the edge force to its surrounding, which provides a new external field. Under such model, even if the snake is started far from the object, it still gets attracted 
+towards the object\cite{xu1998snakes}.
+
+\textbf{Balloon snake: } The ballon snake \cite{kass1988snakes} behaves like a blowing ballnoon. When it passes by strong contour, it stops. Thus, the
+initial snake need not to be too close to the object. The external field is modified and a new pressure force is introduced to make the curve evolve like a ballon.
+
+\textbf{Diffusion snakes: } The diffusion snake \cite{cremers2002diffusion} is modified from Mumford-Shah \cite{mumford2006optimal} for spline contours. It is used 
+when the prior shape information is known. The obtained segmentation maximizes both the Grey value homogeneity in the separated regions and the similarity of the contour with respect to a set of training shapes.
+
+\textbf{Geometric Active Contours: } Geometric active \cite{malladi1995shape} proposed an energy function by summing up the snake perimeter and an inversed edge function. Through minimizing the energy function, the snake moves towards the perimeter shrinking direction and stops at the high edge area. The model may be implemented using level sets, which will be introduced in next section. For the model, the snake can be initialized relatively large to enclose the objects.
 \section{Level set based segmentation}
 \subsection{Overview}
 \subsection{Chan-vese model}

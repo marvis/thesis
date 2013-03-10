@@ -10,7 +10,7 @@ In pratice, a component tree usually considers all threshold values with all pos
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=1.0\textwidth]{images/cptree_example}
-\caption{The component tree with five different values. A. the original image; B. The corresponding component tree; C. the key threshold values}
+\caption[An example of component tree with four levels and five components]{The component tree with five different values. A. the original image; B. The corresponding component tree; C. the key threshold values}
 \label{fig:cptree-example}
 \end{figure}
 \subsection{The $\alpha$ and $\beta$ area}
@@ -38,7 +38,7 @@ As there is no overlap between the $\alpha$ area of any pair of nodes, each imag
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=1.0\textwidth]{images/cptree_alpha}
-\caption{(a) the grayscale image is segmented from level one to level four. (b) The component tree of F. (c) the mapping from pixels to component node.}
+\caption[Component tree construction illustration]{(a) the grayscale image is segmented from level one to level four. (b) The component tree of F. (c) the mapping from pixels to component node.}
 \label{fig:cptree-alpha}
 \end{figure}
 
@@ -78,6 +78,8 @@ Create a component node for each disjoint set, and build the mapping $djs2node$ 
 			Delete $nei\_node$\;
 		}
 	}
+\caption{Build component tree with quasi-linear time}
+\label{alg:cptree-quasi}
 }
 
 \end{algorithm}
@@ -94,7 +96,7 @@ Besides the two main kinds of redundant, there is a third kind of redundant node
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=1.0\textwidth]{images/cptree_random}
-\caption{The full component tree of a random image of size 10x10 with 79 nodes (redundancy rate 79\%), there are lots of single nodes in the tree}
+\caption[The full component tree of a random image]{The full component tree of a random image of size 10x10 with 79 nodes (redundancy rate 79\%), there are lots of single nodes in the tree}
 \label{fig:cptree-random}
 \end{figure}
 
@@ -107,7 +109,7 @@ As mentioned in the sec.\ref{sec:thresh-cptree}, component tree is considered to
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=1.0\textwidth]{images/cptree_flywing}
-\caption{Filtering result of fly wing (1024x1024) by keeping only the child nodes of the pruned component tree. After pruning with parameter mb = 50, ma = 1, and Mb = 100000, the component tree contains 72209 nodes. And there are 2063 wing hairs left. A. the gray-scale wing fly image. B. the segmented result.}
+\caption[Filtering result of fly wing by keeping only the child nodes of the pruned component tree]{Filtering result of fly wing (1024x1024) by keeping only the child nodes of the pruned component tree. After pruning with parameter mb = 50, ma = 1, and Mb = 100000, the component tree contains 72209 nodes. And there are 2063 wing hairs left. A. the gray-scale wing fly image. B. the segmented result.}
 \label{fig:cptree-flywing}
 \end{figure}
 
@@ -201,7 +203,8 @@ the decomposition of $\alpha\alpha$ weight calculating.
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=1.0\textwidth]{images/cptree_aaweight}
-\caption{The decomposition of $\alpha\alpha$ weights between two simple component
+\caption[The decomposition of $\alpha\alpha$ weights between two simple component
+trees.]{The decomposition of $\alpha\alpha$ weights between two simple component
 trees. A. The compents of two images. B. The component trees of the two images. 
 The small case denotes the component node, whereas the large case denotes the $\alpha$
 area. C. The overlapping $\alpha\alpha$ areas. Each image pixel is mapped to a 
@@ -241,14 +244,14 @@ number of pixels, is quasi-linear w.r.t $|P|$.
 \KwData{Component tree $S$ and $T$ with $\alpha$ size and $\beta$ size}
 \KwResult{All pair of weights between nodes and $S$ and nodes in $T$}
 Compute post-order enumerations of the nodes in $S$ and $T$ as $u_1,\ldots,u_n$ and $v_1, \ldots, v_m$, respectively\;
-\emph{\{$\alpha\alpha$ weights calculatiion\}}\;
+\emph{\{$\alpha\alpha$ weights calculation\}}\;
 Initialize all $\alpha\alpha(u,v)$ to 0\;
 \ForEach{pixel $p \in P$ do}{
   $u := \alpha_1^{-1}(p)$\;
   $v := \alpha_2^{-1}(p)$\;
   increase $\alpha\alpha(u,v)$ by one\;
 }
-\emph{\{$\alpha\beta$ weights calculatiion\}}\;
+\emph{\{$\alpha\beta$ weights calculation\}}\;
 \For {$i$ from 1 to $n$ }{
 	\For {$j$ from 1 to $m$}{
 		Initialize $\alpha\beta(u_i,v_j)$ to $\alpha(u_i,v_j)$\;
