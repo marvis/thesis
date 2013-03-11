@@ -1,4 +1,4 @@
-\chapter{Component Tree}\label{chapter:cptree}
+\chapter{Component Tree}\label{chapter:cptree} \label{chpt:cptree}
 Componet tree is one of the main topic in my thesis for cell tracking. In my cell tracking algorithm, each image is converted into a component tree. Then the component trees are used for tree assignment based cosegmentation. Najman and Couprie \cite{Najman:04,najman2006building} proposed a fast way, which is based on Tarjan's union-find procedure, to build a component tree. However, the constructed component tree is usually very large, which is too large for later tree assignment step. It is observed that most nodes in the component tree are redundent which make the tree really big. In this thesis, I proposed a pruning method which decrease the final tree significantly (0.1\% of the original size).\\
 Before component tree assignment, we need to compute the weights between every pair of nodes in two component trees. This step is extremely time consuming, which is once a bottle-neck of our cell tracking algorithm. However, we proposed a fast dynamic algorithm which enables a quasi-linear running time from $O(|T1|\cdot|T2|\cdot N)$ to $O(N)$.
 \section{Component tree construction}
@@ -28,7 +28,7 @@ $$
 \alpha(v) = \{p \in \beta(v)| I(p) = level(v)\}
 $$
 
-It is easy to prune that the $\alpha$ area of all possible component nodes is a partition of the whole image.
+It is easy to prove that the $\alpha$ area of all possible component nodes is a partition of the whole image.
 $$
 \bigcup \alpha(v) = I
 $$
@@ -38,12 +38,12 @@ As there is no overlap between the $\alpha$ area of any pair of nodes, each imag
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=1.0\textwidth]{images/cptree_alpha}
-\caption[Component tree construction illustration]{(a) the grayscale image is segmented from level one to level four. (b) The component tree of F. (c) the mapping from pixels to component node.}
+\caption[Component tree construction illustration]{(a) The grayscale image is segmented from level one to level four. (b) The component tree of F. (c) The mapping from pixels to component node.}
 \label{fig:cptree-alpha}
 \end{figure}
 
 \subsection{Quasi-linear algorithm}
-The process of constructing component tree is a process of partition the image into many un-overlapping areas ($\alpha$ areas) with relationship. According to this idea, Najman and Couprie\cite{najman2006building} proposed a quasi-linear time to construct a component tree. They utilize the disjoint-set data structure,  to represent the discreted $\alpha$ areas.
+The process of constructing component tree is a process of partition the image into many non-overlapping areas ($\alpha$ areas) with relationship. According to this idea, Najman and Couprie\cite{najman2006building} proposed a quasi-linear time to construct a component tree. They utilize the disjoint-set data structure  to represent the discreted $\alpha$ areas.
 
 The algorithm needs only one searching of all image pixels in the order of there intensity from highest to lowest. Initially every image pixel is mapped to a disjoint set (element) with parent to itself. And each disjoint set is mapped to a component node with only one pixel, both for its $\alpha$ area and $\beta$ area and no child node. That's to see, each image pixel is mapped to a component node through its mapped disjoint set.
 
@@ -101,8 +101,16 @@ Besides the two main kinds of redundant, there is a third kind of redundant node
 \end{figure}
 
 \subsection{The pruning precedure}
-As analysised in above, the nodes with too small/large number of pixels and the single nodes with small changes should be deleted. For the first scenario, the total number pixels of a node is the number of pixels in its $\beta$ area, named $\beta$ size. We can set a small $\beta$ size threshold, see $mb$ to filter out small nodes and a big $\beta$ size thresh, see $Mb$ to filter out larger nodes. For the second scenario, the changing of a single node from its parent is the $\alpha$ area of its parent node. Similarly, a small $\alpha$ size threshold, see $ma$, is set to prevent the parent nodes from creating new single child nodes.\\
+As analysised in above, the nodes with too small/large number of pixels and the single nodes with small changes should be deleted. For the first scenario, the total number of pixels of a node is the number of pixels in its $\beta$ area, named $\beta$ size. We can set a small $\beta$ size threshold, see $mb$ to filter out small nodes and a big $\beta$ size thresh, see $Mb$ to filter out larger nodes. For the second scenario, the changing of a single node from its parent is the $\alpha$ area of its parent node. Similarly, a small $\alpha$ size threshold, see $ma$, is set to prevent the parent nodes from creating new single child nodes.\\
 Take the microglia image, of size 156x250x34, as an example. The nodes number of its full component tree is 133187. After pruning with $mb = 1000$, $Mb = 100000$, and $ ma = 100$, only 188 nodes left in the pruned component tree, which is 1/708 of the original size. The redundancy rate decreases from 10.04\% to 0.014\%. The size of the pruned component tree can change according to the parameter of $mb, Mb,$ and $ma$, until it fits the requirement of tree assignment.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=1.0\textwidth]{images/cptree_pruning}
+\caption[Demo of component tree pruning]{The demo of component tree pruning with $mb$, $Mb$, and $ma$ thresholding. Each node in the tree is labelled as its $\alpha$ size and $\beta$ size.}
+\label{fig:cptree-pruning}
+\end{figure}
+
 \subsection{Application for image filtering}
 As mentioned in the sec.\ref{sec:thresh-cptree}, component tree is considered to be an advanced thresholding techniques, which is the collection of all possible thresholding components. A major use of the component tree is for image filtering \cite{najman2006building}. Fig.\ref{fig:cptree-flywing} shows the filtering result of a fly wing image. The intensity of wings increase gradually from bottom-left to top-right. It is impossible to segment the objects out with single threshold. With pruned component tree, we can get the filtering result by keeping only leaf nodes.
 

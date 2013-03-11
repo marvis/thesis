@@ -1,31 +1,31 @@
-\chapter{Image segmentation}
+\chapter{Image segmentation} \label{chpt:imgseg}
 For the cell tracking methods which seperate the segmentation and association steps, the segmentation quality influences the whole tracking result significantly. A good segmentation for the objects in each frame is very important especially in the very early frames. Because the segmentation results of priori frame affects the segmentation results of later frames, that the missing-segmentation of an object will be very likely to be miss tracked in later frames.
 
-Image segmentation are basically ad-hoc problems. Different segmentation emphasize one or more of the desired properites. During the past 40 years, hundreds of segmentation algorithms have been proposed\cite{freixenet2002yet}. There are some basic segmentation methods, such as global/local thresholding and some complex segmentation models, such as active contour, chanvese's method , and graph cut method, introduced in this chaper.
+Image segmentation are basically ad-hoc problems. Different segmentation emphasize one or more of the desired properites. During the past 40 years, hundreds of segmentation algorithms have been proposed\cite{freixenet2002yet}. Some basic segmentation methods, such as global/local thresholding and some complex segmentation models, such as active contour, chanvese's method , and graph cut method, will be introduced in this chaper.
 
-In this thesis, I proposed a multi-object segmentation method based on only one level set function as an extension of Dufour \cite{dufour} and Zhang \cite{zhang}'s method. The key idea is partition the whole image into many voronoi areas by fast marching method. Each object lies in only one voronoi area and performs the chanvese's method to do further segmentation. I build an image processing platform with lots of image segmentation algorithms in C/C++, which is distributed as an open source repository.
+In this thesis, I proposed a voronoi-diagram based multi-cell segmentation method, which needs only one level set function. It is an extension of Dufour \cite{dufour2005segmenting} and Zhang's method \cite{zhang2004tracking} without considering the coupling constraints (usually unnecessary). The key idea of my method is to build a voronoi diagram for all cells by using fastmarching method. Then each object performs the chanvese's segmentation method in its own voronoi area. I build an image processing platform with lots of image segmentation algorithms in C/C++, which is distributed as an open source repository.
 \section{Thresholding method}
 \subsection{Overview}
 In digital image processing, thresholding is the mostly used technique for image segmentation due to its easy usage. Normally the thresholding value is a single value which partitions a grayscale image into foreground and background area. It is offen an effective tool to separate objects from the background and it is always the first tried method before applying other complex segmentation methods. One application of thresholding is document image analysis which aims to extract printed characters \cite{kamel1993extraction,abak1997performance}, graphs, or other items. Examples of thresholding applications lies in all kinds of pre-processing or post-processing steps, including edge detection, image feature extraction, distance transform, skeleton extraction, cell tracking and so on. In practice, thresholding can solve most problems. However, a good thresholding value is required.
 
-Although its simplicity, there is no strict defintion for the thresholding of an image. Quite a lot of thresholding techniques \cite{sahoo1988survey, sankur2001image, sezgin2004survey}, more than 44 binary methods, are proposed according to different criterions. Sezgin and Sankur \cite{sankur2001image, sezgin2004survey} categorize thresholding methods into six groups based on different models, that is histogram shape-based methods, clustering-based methods, entropy-based methods, object attribute-based methods, spatial methods, and local methods. Histogram shape-based methods find the thresholding value on histogram data by seperating the peaks and valleys, the representing method is otsu's thresholding method. Clustering-based methods models the foreground and background as a mixture of two gaussians and applys clustering methods to get the two parts. Entropy-based methods utlize the entropy of the foreground and the background regions, as well as the cross-entropy between the original and binarized image, etc. Object attribute-based methods finds a partition which is similar to the gray-level image in some attributes, such as fuzzy shape similarity, edge coincidence, etc. The spatial methods utilize the probability distribution in higher-order and/or correlation between pixels. Local methods calculate a suitable threshold value for each pixel according to the local image characteristics, such as the standard devariance, mean, etc.
+Although its simplicity, there is no strict definition for the thresholding of an image. Quite a lot of thresholding techniques \cite{sahoo1988survey, sankur2001image, sezgin2004survey}, more than 44 binary methods, are proposed according to different criterions. Sezgin and Sankur \cite{sankur2001image, sezgin2004survey} categorize thresholding methods into six groups based on different models, that is histogram shape-based methods, clustering-based methods, entropy-based methods, object attribute-based methods, spatial methods, and local methods. Histogram shape-based methods find the thresholding value on histogram data by seperating the peaks and valleys, the representing method is otsu's thresholding method. Clustering-based methods models the foreground and background as a mixture of two gaussians and applys clustering methods to get the two parts. Entropy-based methods utlize the entropy of the foreground and the background regions, as well as the cross-entropy between the original and binarized image, etc. Object attribute-based methods finds a partition which is similar to the gray-level image in some attributes, such as fuzzy shape similarity, edge coincidence, etc. The spatial methods utilize the probability distribution in higher-order and/or correlation between pixels. Local methods calculate a suitable threshold value for each pixel according to the local image characteristics, such as the standard devariance, mean, etc.
 
 As thresholding method is not the main segmentation method in our paper, we only introduce some widely used algorithms. For global thresholding method, otsu's method \cite{otsu1975threshold} is a very elegant method with solid mathematic fomulars by minimize the intra-class variance or maximize inter-class variance. And it is easy to extend otsu's method into multi-thresholding method. For local thresholding, the thresholding is decided by average local gray values and/or standard devariance. 
 \subsection{Global thresholding and Otsu's method}
 Global thresholding converts a grey-level image into binary image by turning all pixels below some threshold to zero and all pixels above that threshold to one. If $g(x,y)$ is a thresholded version of $f(x,y)$ at some global threshold $T$, 
-$$
+\begin{equation}
 g(x,y) = \left\{
   \begin{array}{ll}
   1 & \mbox{if } f(x,y) \ge T \\
   0 & \mbox{otherwise}
   \end{array}
   \right.
-$$
-To set a global threshold $T$, we usually analysis the histogram profile by finding a valley that seperates two mountains. One mountain for the foreground and one for the background. The histogram of an image is a probability distribution:
-$$
+\end{equation}
+To set a global threshold $T$, we usually analysis the histogram profile by finding a valley that seperates two mountains. One mountain for the foreground and one for the background. The histogram of an image is a probability distribution,
+\begin{equation}
 p(g) = n_g/n
-$$
-Where, $n_g$ is the number of pixels with intensity $g$, $n$ is the total number of pixels. There are two ways to decide the global threshold, the iterative method and otsu's method. 
+\end{equation}
+where, $n_g$ is the number of pixels with intensity $g$, $n$ is the total number of pixels. There are two ways to decide the global threshold, the iterative method and otsu's method. 
 
 \textbf{Iterative method :} This method compute the global threshold from the initial mean intensity value, then iterative replace the threshold value by the average mean intensity of the foreground and the background regions. See alg\ref{alg:global-thresh} for details of this method.
 
@@ -82,9 +82,9 @@ The major problem with global thresholding is that it considers only the intensi
 Local thresholding divide an image into sub-images by a sliding window. For each sub-image, we find its global threshold. If the region is constant, consider it against a global threshold (all black or white). If there is sufficient variance, use Otsu/Iterative method in the window. 
 
 Generally speaking, the local threshold is set according to the local mean and local variance.
-$$
+\begin{equation}
 T_{local} = a\cdot\mu_{local} + b\cdot\sigma_{local}
-$$
+\end{equation}
 in which the coefficient $a$ for $\mu_{local}$ and the coefficient $b$ for $\sigma_{local}$ is decided according the illumiation gradience or by experience.
 \subsection{Component tree based thresholding} \label{sec:thresh-cptree}
 When the image is slightly complex, the limitation of thresholding methods becomes very obvious. We always can't use a single threshold to get the objects we are interested, especially when there are multiply objects, where each object lies in different gray levels. In such case, some objects will get miss-segmented or half-segmented. Another example is when the background is not evenly distributed, such as vignetting background, which is due to uneven illumination, or linear background. One single threshold will inevitably divide the background area into foreground area.
@@ -98,61 +98,61 @@ With component tree, we don't have to bother about the best threshold. We can fi
 The active contour model\cite{kass1988snakes} (also called snake model) is popular in computer vision, which finds the object boundarys either continous or non-continuous. It is greatly used in application like image segmentation, object tracking, shape recognition, edge detection, and stereo matching.
 
 A snake in the image is a lot of discrete points, which is called a spline.
-$$
-v_i = (x_i, y_i)
-$$
-where $i=0\ldots n-1$. The snake is guided by many forces which maybe external forces from the image gradience or the internal forces from the snake curve itself. When balance, the snake will be guided to the image boundaris and stopped.
+\begin{equation}
+v_s = (x_s, y_s)
+\end{equation}
+where $s \in [0,1]$. The snake is guided by many forces which maybe external forces from the image gradience or the internal forces from the snake curve itself. When balance, the snake will be guided to the image boundaris and stopped.
 
 To describe the snake state, each state (position) of the snake has an energy, which is the sum of external energy and internal energy, corresponding to it. The internal energy $E_{int}$ of the spline (snake) is due to bending. Then external energy $E_{ext}$ consist of the image forces $E_{img}$ acting on spline and the constrainted forces $E_{con}$ introduced by user. 
-
-$$
-E_{snake} = \int_0^1E_{snake}(v(s))ds = \int_0^1(E_{ext} + E_{int})ds
-$$
-$$
+\begin{equation}
+E_{snake} = \int_0^1E_{snake}(v(s))ds = \int_0^1(E_{ext} + E_{int})ds \\
+\end{equation}
+\begin{equation}
 E_{ext} = E_{img} + E_{con}
-$$
+\end{equation}
 
 \textbf{Internal energy: } The bending forces of the snake come from the curve length and curve curvature.
 \begin{equation}\label{eqn:int-energy}
 E_{int} = (\alpha(s)|v_s(s)|^2 + \beta(s)|v_{ss}(s)|^2)/2
 \end{equation}
 where $\alpha(s)$ and $\beta(s)$ controls the energy sensitive to snake stretching and curve roundness, $|v_s(s)|^2$ represents the snake length and $|v_{ss}(s)|^2$ represents the total curvature. The larger the value of $\alpha(s)$, the more sensitive of the internal energy as the snake stretches. And the larger the value of $\beta(s)$, the more sensitive of the internal enerygy as the curve increase.
+
 \textbf{Image forces: } The forces has three components that is lines, edges and terminations.
-$$
+\begin{equation}
 E_{img} = w_{line}E_{line} + w_{edge}E_{edge} + w_{term}E_{term}
-$$
+\end{equation}
 The line component is just the intensity of the image.
-$$
+\begin{equation}
 E_{line} = I(x,y)
-$$
+\end{equation}
 Edges in the images will make the snake attract to the area with large image gradients.
-$$
+\begin{equation}
 E_{edge} = -|\nabla I(x,y)|^2
-$$
+\end{equation}
 Or the edge computed on the gaussian blured image,
-$$
+\begin{equation}
 E_{edge} = -|G_\sigma \cdot \nabla^2 I|^2
-$$
+\end{equation}
 The termination component of energy can be defined as
-$$
+\begin{equation}
 E_{term} = \frac{\partial \theta}{\partial n_\perp} = \frac{C_{yy}C_x^2 - 2C_{xy}C_xC_y + C_{xx}C_y^2}{(C_x^2 + C_y^2)^{3/2}}
-$$
+\end{equation}
 where $C(x,y)$ is the gaussian smoothed image on $I(x,y)$, $C_x$ and $C_y$ are gradient along $x$ and $y$, $C_{xx}$, $C_{xy}$, and $C_{yy}$ are second order gradients. This component is used to detect corners and terminations in an image.
 
 \textbf{Constraint energy: } In some systems, the user interaction on the snake can guide the snake towards or away from particular features. 
 \subsection{Energy minimization model}
 The snake will move toward the energy decreasing direction. One of the simplest optimization method is gradient-descent minization\cite{snyman2005practical}. The energy of the snake can be estimated by using the discrete points on the snake. 
-$$
+\begin{equation}
 E_{snake} \approx \sum_1^nE_{snake}(\bar{v}_i)
-$$
+\end{equation}
 Thus the devirative of the energy is approximate to
-$$
+\begin{equation}
 \nabla E_{snake} \approx \sum_1^n \nabla E_{snake}(\bar{v}_i)
-$$
+\end{equation}
 Now applying the gradient descent minimization, the position of the snake is adjust as,
-$$
+\begin{equation}
 \bar{v}_i = \bar{v}_i - \nabla E_{snake}(\bar{v}_i)
-$$
+\end{equation}
 This equation is applied iteratively until the energy doesn't change.
 \subsection{Other implementations}
 The classic snake modes which driven the snake towards object contours depends very much on the initial snake position.
@@ -173,10 +173,140 @@ when the prior shape information is known. The obtained segmentation maximizes b
 
 \textbf{Geometric Active Contours: } Geometric active \cite{malladi1995shape} proposed an energy function by summing up the snake perimeter and an inversed edge function. Through minimizing the energy function, the snake moves towards the perimeter shrinking direction and stops at the high edge area. The model may be implemented using level sets, which will be introduced in next section. For the model, the snake can be initialized relatively large to enclose the objects.
 \section{Level set based segmentation}
-\subsection{Overview}
-\subsection{Chan-vese model}
-\subsection{Multi-objects segmentation model}
-\subsection{My work}
+Level set method is a numerical method for the evolution of curve (or interface). In mathematics, a level set of a function $f$ with $n$ variables is the set of the form,
+\begin{equation}
+LS_c(f) = \{(x_1,\ldots,x_n)|f(x_1,\ldots,x_n) = c\}
+\end{equation}
+where $c$ is the level set value. The level set can be used to represent a curve implicitly. For example, the two dimension circle $x^2 + y^2 = 1$ can be considered as the zero level of function $f(x,y) = x^2 + y^2 - 1$. With level set function, we can easiy define the inside area, background area and interface $\Gamma$.
+\begin{equation}
+\Gamma = \{\vec{x}|f(\vec{x}) = 0\}
+\end{equation}
+\begin{equation}
+Inside = \{\vec{x}|f(\vec{x}) > 0\}
+\end{equation}
+\begin{equation}
+Outside = \{\vec{x}|f(\vec{x}) < 0\}
+\end{equation}
+
+The great advantage of level set methods is the ability to utilize the regional information, such as the area and average intensity properties. Based on such merits, Chan and Vese \cite{chan2001active,chan2000active} proposed a modified Mumford-Shah function to segment an image into piecewise constant regions without considering the edge information. However, Chan-Vese model can only segment an image into two phase (two distinct regions) which is hard to distinguish multi-objects. To break through this limitation, a multi-phase level set method \cite{vese2002multiphase} is proposed to segment an image into $N$ phases with $log_2N$ level set functions, where each phase represents an object. And further, to overcome the cell touching problem, the coupled level set model is proposed by Zhang \cite{zhang2004tracking} to segment $N$ objects with $N$ level set functions. Dufour \cite{dufour2005segmenting} extends the model to 3D confocal image segmentation. Palaniappan \cite{nath2006robust} did the work of lower down the number of level set functions to only four.
+
+\subsection{Explicit methods vs. implicit methods}
+Usually there are two ways to represent a curve, explicitly or implicitly. The explicit way defines a curve with parameter, 
+\begin{equation}
+C = \{C_i| C_i=(x_i, y_i), i \in \{1,\ldots,n\}\}
+\end{equation}
+where $n$ is the vertex number on the curve, $C_0$ is the start point and $C_n$ the last point. The implicit way defines a curve as the zero level set of a function,
+\begin{equation}
+C = \{(x,y)|f(x,y) = 0\}
+\end{equation}
+The solution for an explicit curve is explicit method, and the solution for an implicit curve is implicit method. 
+
+\emph{Explicit methods} calculate the state of a curve at a later time from the state of the curve at the current time, while \emph{implicit methods} find a solution by solving an equation involving both the current state of the curve and the later one. Let $C(t)$ stands for current curve state and $C(t+\Delta t)$ is the state at the later time, then , for an explict method
+\begin{equation}
+C(t+\Delta t) = F(C(t))
+\end{equation}
+while for an implicit method one solves an equation
+\begin{equation}
+G(C(t), C(t+\Delta t)) = 0
+\end{equation}
+to find $C(t + \Delta t)$.
+
+Obviously, the implicit method will need more computation time and hard to implement. However, with level set method the implicit methods have many great feature. Without having to parameterize these objects, the level set method enables an easy way to follow shapes that change topology, such as shape spliting, shape merging, and adding holes. As many fast algorithms appeared, the limitation of level set method becomes less important. 
+
+For some segmentation problems, such as Chan-Vese model bellow, it impossible to use explicit methods when the regional information is considered, while implicit methods solve the problem naturally.
+\subsection{Chan-Vese model}
+Based on the level set curve evolution and Mumford-Shah function, Chan and Vese \cite{chan2001active} proposed a new model for active contours to detect objects in an image. The model can detect objects whose boundary is not so called sharp edges. Though without edges, the evolving curve can still stop at the desired position by minimize an energy function. With level set technique, Chan-Vese model overcomes many difficulties arising in previous methods (snake model) of image segmentation.
+
+Chan-Vese model considers the segmentation result of an image $u_0$  as a piecewise constant image $u$. The foreground (inside) area of $u$ is of constant intensity $c_i$, and the background (outside) area of $u$ is of constant intensity $c_o$. The energy function for the segmentation result $u$ is defined as the difference between $u_0$ and $u$.
+\begin{eqnarray*}
+E(C) & = &  \int_{inside( C)}|u_0(x,y) - c_i|^2dxdy + \int_{outside( C)}|u_0(x,y) - c_o|^2dxdy
+\end{eqnarray*}
+Here $C$ is the segmentation contour (curve), which is the zero level set of a function $\phi$,
+\begin{equation}
+C = \{(x,y) \in \Omega|\phi(x,y) = 0\}
+\end{equation}
+And the inside and outside area is defined as the positive level sets and negative level sets of $\phi$.
+\begin{equation}
+inside( C) = \{(x,y) \in \Omega|\phi(x,y) > 0\}
+\end{equation}
+\begin{equation}
+outside( C) = \{(x,y) \in \Omega|\phi(x,y) < 0\}
+\end{equation}
+For the constant values $c_i$ and $c_o$,  they can be user defined intensity or the average intensity of inside and outside area,
+\begin{equation}
+c_i(\phi) = \frac{\int_{\Omega}u_0(x,y)H(\phi(x,y))dxdy}{\int_{\Omega}H(\phi(x,y))dxdy}
+\end{equation}
+\begin{equation}
+c_o(\phi) = \frac{\int_{\Omega}u_0(x,y)(1-H(\phi(x,y)))dxdy}{\int_{\Omega}(1-H(\phi(x,y)))dxdy}
+\end{equation}
+where $H(z)$ is a binary function, that is one for positive value and zero for negative value.
+
+To get a more smooth boundary, we can add more regularizing items to the energy function,
+\begin{eqnarray}
+\label{eqn:chanvese}
+E(c_i,c_o,C) & = & \mu\cdot\mbox{Length( C)} + \nu \cdot \mbox{Area} + \lambda_1\int_{inside( C)}|u_0(x,y) - c_i|^2dxdy \\
+\nonumber
+& & + \lambda_2\int_{outside( C)}|u_0(x,y) - c_o|^2dxdy
+\end{eqnarray}
+
+This energy function is an extension of geometric active contour model by minimize the perimeter of the contour. Here the length and area energies are defined as, 
+\begin{equation}
+\mbox{Length}\{\phi = 0\} = \int_\Omega|\nabla H(\phi(x,y))|dxdy = \int_{\Omega}\delta_0(\phi(x,y))|\nabla\phi(x,y)|dxdy
+\end{equation}
+\begin{equation}
+\mbox{Area}\{\phi \ge 0\} = \int_{\Omega}H(\phi(x,y))dxdy
+\end{equation}
+where $\delta_0(z) = \frac{d}{dz}H(z)$ and $\Omega$ is the image domain.
+
+\subsubsection{Numerical solution}
+Equation\ref{eqn:chanvese} is solved by variational method. Through substituing into the Euler-Lagrange equation and applying Green's identity and Green's theorem, the solution PDE is,
+\begin{equation}
+\frac{\partial \phi}{\partial t} = \delta(\phi)\left[\mu\mbox{div}\left(\frac{\nabla\phi}{|\nabla\phi|}\right)-\nu -\lambda_1(u_0-c_1)^2 + \lambda_2(u_0-c_2)^2\right]
+\end{equation}
+
+\subsubsection{Effect of weights}
+Each energy item in eqn.\ref{eqn:chanvese} is weighted according to real instance. For length energy weight, $\mu$ controls the smoothness of the contour. High $\mu$ value enables a tightly attached contour to the object, whereas low $\mu$ value enables a loosely enclosed contour. The area weight $\nu$ inhibit the growing of inside area. The relative balance between $\lambda_1$ and $\lambda_2$ determines which side, inside or outside, has higher importance in minimizing the energy. 
+
+\subsubsection{Generalizing to N-dimension}
+Chan-Vese model can be naturally extended to N-dimensional image segmentation with the energy function,
+\begin{eqnarray}
+\nonumber
+E(\phi, c_i, c_o) & = & \mu\int_\Omega |\nabla H(\phi(\vec{x}))|d\vec{x} + \nu\int_\Omega H(\phi(\vec{x}))d\vec{x}\\
+                 &    & + \lambda_1\int_\Omega |u_0(\vec{x} - c_i)|^2H(\phi(\vec{x}))d\vec{x} \\
+\nonumber
+				 &    & + \lambda_2\int_\Omega |u_0(\vec{x} - c_o)|^2(1 - H(\phi(\vec{x})))d\vec{x}
+\end{eqnarray}
+And the solution is similarly,
+\begin{equation}
+\frac{\partial \phi(\vec{x})}{\partial t} = \delta_0(\phi(\vec{x})\left[\mu\mbox{div}\left(\frac{\nabla\phi(\vec{x})}{|\nabla\phi(\vec{x})|}\right)-\nu -\lambda_1(u_0(\vec{x})-c_i)^2 + \lambda_2(u_0(\vec{x})-c_o)^2\right] 
+\end{equation}
+
+\subsubsection{Generalizing to vector-valued images}
+For an image with multi-channels (RGB image), each pixel is a vectorized value. The energy is defined as the average energy of each channel \cite{chan2000active},
+\begin{eqnarray}
+\nonumber
+E(\phi,\vec{c^+}, \vec{c^-},\phi) & = &\mu\cdot L + \int_{inside( C)} \frac{1}{N}\sum_{i=1}^N\lambda_i^+|I_i(x,y)-c_i^+|^2dxdy \\
+& & + \int_{outside(C )}\frac{1}{N}\sum_{i=1}^N\lambda_i^-|I_i(x,y)-c_i^-|^2dxdy
+\end{eqnarray}
+where $\vec{c^+}$ and $\vec{c^-}$ are inside average intensity and outside average intensity for each channel with the same segmentation result $\phi = 0$. And the corresponding solution,
+\begin{equation}
+\frac{\partial \phi}{\partial t} = \delta(\phi)\left[\mu\mbox{div}\left(\frac{\nabla\phi}{|\nabla\phi|}\right) -\frac{1}{N}\sum_{i=1}^N\lambda_i^+(I_i(x,y)-c_i^+)^2 + \frac{1}{N}\sum_{i=1}^N\lambda_i^-(I_i(x,y)-c_i^-)^2\right]
+\end{equation}
+
+For vector-valued ChanVese model, besides its application to RGB images, it can be used for texture image segmentation. A texture image can be decomposited into many small blocks and each block is calculated with many features. Thereby a texture image can be converted into a low resolution image with many channels (that is one feature one channel).
+
+\subsection{Multi-objects segmentation}
+Chan-Vese model segment an image into two phases, the interested cells are all segmented into one region, which is hard to distinguished. Later a multiphase variant of Chan-Vese model was also proposed to handle $2^n$ unique phases with $n$ level set functions. But Zhang \cite{zhang2004tracking}, Dufour \cite{dufour2005segmenting} and Zimmer \cite{zimmer2005coupled} found that the multi-phase model is unsuitable for realiable cell segmentation due to the problem of frequently cell merging. By considering the merging event, Zhang \cite{zhang2004tracking} proposed an $N$-level set framework, that each level set function describes an object, by adding a coupling punishment for merging areas. The following two sections will introduce multi-phase level set methods and the coupling level sets method.
+
+However, during my experiment I find it not too much help with coupling constraints. It's hard to set the coupling weight. The coupling area usually changes dramaticly. For an un-suitable coupling weight, the coupling area dispears rapidly once two cells merged together. For a reason, we can force the level set function stop growing when meet with the boundary of another level set function. So we can set a boundary for each level set function according to the initial object area. Such bundary could actually be obtained from a generalized voronoi diagram of all input objects. After that, we can perform Chan-Vese's level set method in each voroni area. The voronoi diagram changes every a few iterations according the last level set segmentation results. With voronoi diagram, we will need only one level set function to segment any number of objects. 
+
+\subsection{Multiphase level sets method}
+To segment multiple objects, Chan and Vese extended their 2-phase algorithm to N-phase algorithm by using $log_2N$ level set function. Because, $n$ level set functions could form $2^n$ intercrossing region. Each 
+\subsection{Coupled N level sets method}
+The number of coupling level set functions can be reduced from N to 4 \cite{nath2006robust} by using coloring theory. level set functions.
+
+\subsection{V-D based one level set method}
+The generalized voronoi diagram is introduced in Sec.\ref{subsec:gvd}
 \section{Graph cut method}
 \section{Open-source librarys}
 \subsection{ITK}
