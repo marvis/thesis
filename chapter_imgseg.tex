@@ -188,7 +188,7 @@ Inside = \{\vec{x}|f(\vec{x}) > 0\}
 Outside = \{\vec{x}|f(\vec{x}) < 0\}
 \end{equation}
 
-The great advantage of level set methods is the ability to utilize the regional information, such as the area and average intensity properties. Based on such merits, Chan and Vese \cite{chan2001active,chan2000active} proposed a modified Mumford-Shah function to segment an image into piecewise constant regions without considering the edge information. However, Chan-Vese model can only segment an image into two phase (two distinct regions) which is hard to distinguish multi-objects. To break through this limitation, a multi-phase level set method \cite{vese2002multiphase} is proposed to segment an image into $N$ phases with $log_2N$ level set functions, where each phase represents an object. And further, to overcome the cell touching problem, the coupled level set model is proposed by Zhang \cite{zhang2004tracking} to segment $N$ objects with $N$ level set functions. Dufour \cite{dufour2005segmenting} extends the model to 3D confocal image segmentation. Palaniappan \cite{nath2006robust} did the work of lower down the number of level set functions to only four.
+The great advantage of level set methods is the ability to utilize the regional information, such as the area and average intensity properties. Based on such merits, Chan and Vese \cite{chan2001active,chan2000active} proposed a modified Mumford-Shah function to segment an image into piecewise constant regions without considering the edge information. However, Chan-Vese model can only segment an image into two phase (two distinct regions) which is hard to distinguish multi-objects. To break through this limitation, a multi-phase level set method \cite{vese2002multiphase} is proposed to segment an image into $N$ phases with $\left \lfloor log_2N \right \rfloor$ level set functions, where each phase represents an object. And further, to overcome the cell touching problem, the coupled level set model is proposed by Zhang \cite{zhang2004tracking} to segment $N$ objects with $N$ level set functions. Dufour \cite{dufour2005segmenting} extends the model to 3D confocal image segmentation. Palaniappan \cite{nath2006robust} did the work of lower down the number of level set functions to only four.
 
 \subsection{Explicit methods vs. implicit methods}
 Usually there are two ways to represent a curve, explicitly or implicitly. The explicit way defines a curve with parameter, 
@@ -296,17 +296,80 @@ where $\vec{c^+}$ and $\vec{c^-}$ are inside average intensity and outside avera
 For vector-valued ChanVese model, besides its application to RGB images, it can be used for texture image segmentation. A texture image can be decomposited into many small blocks and each block is calculated with many features. Thereby a texture image can be converted into a low resolution image with many channels (that is one feature one channel).
 
 \subsection{Multi-objects segmentation}
-Chan-Vese model segment an image into two phases, the interested cells are all segmented into one region, which is hard to distinguished. Later a multiphase variant of Chan-Vese model was also proposed to handle $2^n$ unique phases with $n$ level set functions. But Zhang \cite{zhang2004tracking}, Dufour \cite{dufour2005segmenting} and Zimmer \cite{zimmer2005coupled} found that the multi-phase model is unsuitable for realiable cell segmentation due to the problem of frequently cell merging. By considering the merging event, Zhang \cite{zhang2004tracking} proposed an $N$-level set framework, that each level set function describes an object, by adding a coupling punishment for merging areas. The following two sections will introduce multi-phase level set methods and the coupling level sets method.
+Chan-Vese model segment an image into two phases, the interested cells are all segmented into one region, which is hard to distinguished. Later a multiphase variant of Chan-Vese model was proposed to handle $2^n$ unique phases with $n$ level set functions. But Zhang \cite{zhang2004tracking}, Dufour \cite{dufour2005segmenting} and Zimmer \cite{zimmer2005coupled} found that the multi-phase model is unsuitable for realiable cell segmentation due to the problem of frequently cell merging. By considering the merging event, Zhang \cite{zhang2004tracking} proposed an $N$-level set framework, that each level set function describes an object, by adding a coupling punishment for merging areas. The following two sections will introduce multi-phase level set methods and the coupling level sets method.
 
 However, during my experiment I find it not too much help with coupling constraints. It's hard to set the coupling weight. The coupling area usually changes dramaticly. For an un-suitable coupling weight, the coupling area dispears rapidly once two cells merged together. For a reason, we can force the level set function stop growing when meet with the boundary of another level set function. So we can set a boundary for each level set function according to the initial object area. Such bundary could actually be obtained from a generalized voronoi diagram of all input objects. After that, we can perform Chan-Vese's level set method in each voroni area. The voronoi diagram changes every a few iterations according the last level set segmentation results. With voronoi diagram, we will need only one level set function to segment any number of objects. 
 
 \subsection{Multiphase level sets method}
-To segment multiple objects, Chan and Vese extended their 2-phase algorithm to N-phase algorithm by using $log_2N$ level set function. Because, $n$ level set functions could form $2^n$ intercrossing region. Each 
-\subsection{Coupled N level sets method}
-The number of coupling level set functions can be reduced from N to 4 \cite{nath2006robust} by using coloring theory. level set functions.
+To segment multiple objects, Chan and Vese extended their 2-phase algorithm to N-phase algorithm by using $\left \lfloor log_2N \right \rfloor$ level set function. Because, $n$ level set functions could form $2^n$ intercrossing region. Each object is describes as the combination of inside or outside of these level set functions. For example, an image $u_0$ can be segmented into four areas with two level set function $\phi_1$ and $\phi_2$. The four areas are,
+\begin{equation}
+u_{00} = \{(x,y) | H(\phi_1(x,y)) == 0 \&\& H(\phi_2(x,y)) == 0\}
+\end{equation}
+\begin{equation}
+u_{01} = \{(x,y) | H(\phi_1(x,y)) == 0 \&\& H(\phi_2(x,y)) == 1\}
+\end{equation}
+\begin{equation}
+u_{10} = \{(x,y) | H(\phi_1(x,y)) == 1 \&\& H(\phi_2(x,y)) == 0\}
+\end{equation}
+\begin{equation}
+u_{11} = \{(x,y) | H(\phi_1(x,y)) == 1 \&\& H(\phi_2(x,y)) == 1\} 
+\end{equation}
+Here, the four regions $u_{00}$, $u_{01}$, $u_{10}$, and $u_{11}$ is a partition of image $u_0$. The energy function is defined as the sum of energy (variance) in each regions and the sum of length of the boundary.
+\begin{eqnarray}
+\nonumber
+E(\phi_1,\phi_2, \vec{c}) & = & \mu_{00}\int_{\Omega}(u_0(x,y) - c_{00})^2(1-H(\phi_1))(1-H(\phi_2))dxdy \\
+\nonumber
+& & + \mu_{01}\int_{\Omega}(u_0(x,y) - c_{01})^2(1-H(\phi_1))H(\phi_2)dxdy \\
+\label{eqn:4phase}
+& & + \mu_{10}\int_{\Omega}(u_0(x,y) - c_{10})^2H(\phi_1)(1-H(\phi_2))dxdy \\
+\nonumber
+& & + \mu_{11}\int_{\Omega}(u_0(x,y) - c_{11})^2H(\phi_1)H(\phi_2)dxdy \\
+\nonumber
+& & + \sum_{1 \le i \le 2}\nu_i\int_{\Omega}|\nabla H(\phi_i)|dxdy
+\end{eqnarray}
+where $\mu_{ij}$ is the weight of energy for each region, $\vec{c}$, which contains $c_{00}$, $c_{01}$, $c_{10}$ and $c_{11}$, is the mean of each region, $\nu_i$ is the weight for the length of each level set function. Through the above Euler-Lagrange equation \ref{eqn:4phase}, we get the derivative functions for both $\phi_1$ and $\phi_2$, 
+\begin{eqnarray}
+\frac{\partial \phi_1}{\partial t}  & = &  \delta_0(\phi_1) [\mu_{00}|u_0 - c_{00}|^2(1-H(\phi_2)) + \mu_{01}|u_0 - c_{01}|^2H(\phi_2) \\
+\nonumber
+ & & - \mu_{10}|u_0 - c_{10}|^2(1-H(\phi_2)) - \mu_{11}|u_0 - c_{00}|^2H(\phi_2) +\nu_1\nabla(\frac{\nabla\phi_1}{|\nabla\phi_1|})]
+\end{eqnarray}
+\begin{eqnarray}
+\frac{\partial \phi_2}{\partial t}  & = &  \delta_0(\phi_2) [\mu_{00}|u_0 - c_{00}|^2(1-H(\phi_1)) - \mu_{01}|u_0 - c_{01}|^2H(\phi_1) \\
+\nonumber
+ & & + \mu_{10}|u_0 - c_{10}|^2(1-H(\phi_1)) - \mu_{11}|u_0 - c_{00}|^2H(\phi_1) +\nu_1\nabla(\frac{\nabla\phi_2}{|\nabla\phi_2|})]
+\end{eqnarray}
 
-\subsection{V-D based one level set method}
+When extends to $N$-phases with $\left \lfloor log_2N \right \rfloor$ level set functions, the energy function becomes
+\begin{equation}
+E(\Phi, \vec{c}) = \sum_{1\le i \le N} \mu_i\int_{\Omega}(u_0(x,y) - c_i)^2\chi_idxdy + \sum_{1 \le i \le \left \lfloor log_2N \right \rfloor}\nu_i\int_{\Omega}|\nabla H(\phi_i)|dxdy
+\end{equation}
+where $\Phi$ is a vector of level set functions ($\phi_1$ and $\phi_2$), $c$ is a vector of mean intensity values (i.e. $c_i = mean(u_0)$ in the region $i$), $\chi_i$ is a function used to decide whether the location $(x,y)$ is in region $i$ formed by associated Heaviside functions $H(\phi_i)$, and $\mu_i, \nu_i$ are constant weight values associated with the energy and the length terms of each level set function, respectively. 
+
+The multi-phase level set function improves the performance of Chan-Vese model by adding just a few ($\left \lfloor log_2N \right \rfloor$) level set functions. In this framework, the objects with varying intensities can be segmented efficiently. But does not help to prevent under-segmentation (i.e. incorrect merges), when the objects have similar intensities (i.e. cells).
+
+\subsection{Coupling $N$ level sets method}
+To overcome the problems in multi-phase level set method, Zhang \cite{zhang2004tracking} proposed a model for segmenting $N$ cells, that each cell is described by a level set function. The cell merging event, which happends when the inside areas of two level functions overlap, is prevented by introducing a paire-wise energy based coupling constraint. The energy function is given by,
+\begin{eqnarray}
+\nonumber
+E(\Phi, \vec{c_{in}}, c_{out}) & = & \gamma \sum_{i=1}^N\sum_{j=i+1}^N\int_\Omega H(\phi_i)H(\phi_j)dxdy + \nu \sum_{i=1}^N\int_\Omega |\nabla H(\phi_i)|dxdy\\
+& & + \mu_i\sum_{i=1}^N\int_\Omega (u_0 - c_{in}^i)^2H(\phi_i)dxdy \\
+\nonumber
+& & + \mu_{out}\int_\Omega(u_0 - c_{out})^2 \prod_{i=1}^N(1-H(\phi_i))dxdy
+\end{eqnarray}
+where $\Phi = \{\phi_1,\ldots,\phi_N\}$ represents N-level set functions, $\vec{c_{in}} = \{c_{in}^1, \ldots; c_{in}^N\}$ is the average intensities of inside area of the $N$ level set functions, whereas $c_{out}$ is the average intensity of background, which is defined as the commn outside area of the $N$ level set functions. The main difference between N-level set model and previous (2-phase or multi-phase) Chan-Vese models is the first coupling term, where $H(\phi_i)H(\phi_j)$ characterized the overlaping between the inside areas of $\phi_i$ and $\phi_j$. This coupling term should be as small as possible. The same idea is used for 3D cell segmentation by Dufour \cite{dufour2005segmenting}. Through solving the Euler-Lagrange equation, the corresponding derivative equation for each level set function is given by,
+\begin{eqnarray}
+\frac{\partial \phi_i}{\partial t} & = & \delta_0(\phi_i)[-\gamma\sum_{j=1, j\ne i}^NH(\phi_j) + \nu\nabla(\frac{\nabla\phi_i}{|\nabla\phi_i|}) \\
+& & - \mu_i(u_0 - c_{in}^i)^2 + \mu_{out}(u_0 - c_{out})^2\prod_{j=1, j\ne i}^N(1-H(\phi_j)]
+\end{eqnarray}
+
+The novelty of this model helps to sovle the cell merging problem. However, due to the great computation cost, this method is only tested on synthetic data and some very simple data. This method is hard to be applied to large data and the effect of segmenting merging cells is not at all satisfying according to my test.
+
+\subsection{V-D based level set method}
+The coupling based N-level set is proposed to solve the cell merging problem. However, in practice, we found that the coupling $N$ level set method can solve the cell merging problem only when there is a good initial mask. And each level set would also find other objects with similar intensity level. The biggest problem for N level set model is the great computation cost, which makes the methold suitable to only small image data.
+
 The generalized voronoi diagram is introduced in Sec.\ref{subsec:gvd}
+Local segmentation advantage
+objects with similar intensity
 \section{Graph cut method}
 \section{Open-source librarys}
 \subsection{ITK}
