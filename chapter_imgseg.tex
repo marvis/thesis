@@ -365,11 +365,37 @@ where $\Phi = \{\phi_1,\ldots,\phi_N\}$ represents N-level set functions, $\vec{
 The novelty of this model helps to sovle the cell merging problem. However, due to the great computation cost, this method is only tested on synthetic data and some very simple data. This method is hard to be applied to large data and the effect of segmenting merging cells is not at all satisfying according to my test.
 
 \subsection{V-D based level set method}
-The coupling based N-level set is proposed to solve the cell merging problem. However, in practice, we found that the coupling $N$ level set method can solve the cell merging problem only when there is a good initial mask. And each level set would also find other objects with similar intensity level. The biggest problem for N level set model is the great computation cost, which makes the methold suitable to only small image data.
+The coupling based N-level set is proposed to solve the cell merging problem. However, in practice, we found that the coupling $N$ level set method can solve the cell merging problem only when there is a good initial mask. And each level set would also find other objects with similar intensity level. The biggest problem for $N$ level set model is the great computation cost, which makes the methold suitable to only small image data.
 
-The generalized voronoi diagram is introduced in Sec.\ref{subsec:gvd}
-Local segmentation advantage
-objects with similar intensity
+During the practice, I find that it is hard to control the overlapping area of two level set functions when the two level sets have similar intensity level. By using coupling principal, the overlapping area get appear and dispear in turns and the overlapping area may get into pieces. If the inside areas of each level set function doesn't overlap with each other, we can find a voronoi area for each inside area. By doing so, each object is constrains in a small voronoi area, without violating the area of others. We can apply Chan-Vese's method in each local area, without considering the coupling constraints. And the voronoi boundaries will be refresh after a few iteration.
+
+The energy function is defined as the sum of Chan-Vese level set enengy for each voronoi area, which is given by,
+\begin{eqnarray}
+\nonumber
+E(\Phi,\vec{c_I},\vec{c_O}) & = & \sum_{i=1}^n \Big{\{}\mu \int_{\Omega_i} |\nabla H(\phi_i|d\vec{x} \\
+\nonumber
+                                                                    & + & \nu\int_{\Omega_i} H(\phi_i)d\vec{x}\\
+                                                                    & + & \lambda_1 \int _{\Omega_i}|u_0(\vec{x}) - c_{I_i}|^2H(\phi_i)d\vec{x} \\
+\nonumber
+                                                                    & + & \lambda_2\int_{\Omega_i}|u_0(\vec{x}) - c_{O_i}|^2(1-H(\phi_i))d\vec{x} \Big{\}}
+\end{eqnarray}
+where $\phi_i(x) = \phi(x) * (M(x) == i)$ with the defined area $\Omega_i = \{\vec{x} \in \Omega | M(\vec{x}) == i\}$. The solution for each local level set function $\phi_i$ is,
+\begin{equation}
+\frac{\partial \phi_i}{\partial t} = \delta(\phi_i)\left[\mu\mbox{div}\left(\frac{\nabla\phi_i}{|\nabla\phi_i|}\right)-\nu -\lambda_1(u_0-c_{I_i})^2 + \lambda_2(u_0-c_{O_i})^2\right]
+\end{equation}
+The process of building the voronoi diagram for each object is introduced in Sec.\ref{subsec:gvd}.
+
+There are many advantages for V-D base one level set method. First, there is only one level set function ($\phi_i$ is just a small part of $\phi$), which saves lots of computation time. Second, it perfoms local segmentation, which works for images with gradient background. Third, objects with similar intensity could also be segmentated.
+
+The limitation of this model is the great dependency for the initial segmentation.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=1.0\textwidth]{images/imgseg_multiobjs}
+\caption[The level set model of multi-objects segmentation]{A. Multi-phase level set model. B. Coupling $N$ level set model. C. Voronoi-Diagram base one level set model.}
+\label{fig:imgseg-multiobjs}
+\end{figure}
+
 \section{Graph cut method}
 \section{Open-source librarys}
 \subsection{ITK}
