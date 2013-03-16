@@ -92,8 +92,7 @@ When the image is slightly complex, the limitation of thresholding methods becom
 Even though the local thresholding can overcome some of the problem in global thresholding, but it is not easy to decide the size of sliding windows and the coefficients. In our paper, we use a much advanced method which considers all possible thresholds. We will get all possible connected-component in different threshols. The relationship between connected-component is either inclusion or non-overlap. So we can build a tree, called component tree, to manage the relationship for all connected-component. 
 
 With component tree, we don't have to bother about the best threshold. We can filter out the components with certain size, which is obtained from a piori knowledge. The details about component tree will be introduce in chapter \ref{chapter:cptree}.
-\section{Watershed methods}
-Watershed method\cite{vincent1991watersheds} is a widely used method for grayscale image segmentation. 
+
 \section{Snake: Active contour method}
 \subsection{Overview}
 The active contour model\cite{kass1988snakes} (also called snake model) is popular in computer vision, which finds the object boundarys either continous or non-continuous. It is greatly used in application like image segmentation, object tracking, shape recognition, edge detection, and stereo matching.
@@ -396,42 +395,5 @@ The limitation of this model is the great dependency of the initial segmentation
 \caption[The level set model of multi-objects segmentation]{A. Multi-phase level set model. B. Coupling $N$ level set model. C. Voronoi-Diagram base one level set model.}
 \label{fig:imgseg-multiobjs}
 \end{figure}
-
-\section{Graph cuts method}
-\subsection{Network flow theory}
-Due to the theorem of Ford and Fulkerson\cite{ford1963flows}, this is equivalent to computing the maximum flow from the source to sink. There are many algorithms that solve this problem in polynomial time with small constants \cite{ahuja1993network,boykov2004experimental,goldberg1988new}
-\begin{table}
-  \caption{History of Maxflow Algorithms. The red rows use augmenting path method and the blue rows use push-relabel method. $n$ is the number of nodes, $m$ is the number of edges, and $U$ is the maximum edge weight.}
-\begin{center}
- \begin{tabular}{| l | l | l |}
-    \hline
-    Year & Author(s) & Running time \\ \hline 
-    1951 & Dantzig & $O(n^2mU)$ \\ \hline
-	1955 & Ford \& Fulkerson & $O(m^2U)$ \\ \hline
-	1970 & Dinitz & \color{red}$O(n^2m)$\\ \hline
-	1972 & Edmons \& Karp & $O(m^2\log U)$\\ \hline
-	1973 & Dinitz & \color{red}$O(nm\log U)$ \\ \hline
-	1974 & Karzonov & \color{red}$O(n^3)$ \\ \hline
-	1977 & Cherkassky & \color{red}$O(n^2m^{1/2}$ \\ \hline
-	1980 & Galil \& Naamad & \color{red}$O(nm\log^2n)$ \\ \hline
-	1983 & Sleator \& Tarjan & \color{red}$O(nm\log n)$ \\  \hline
-	1986 & Goldberg \& Tarjan & \color{blue}$O(nm\log(n^2/m))$ \\ \hline
-	1987 & Ahuja \& Orlin & \color{blue}$O(nm + n^2\log U)$ \\ \hline
-	1987 & Ahuja et al. & \color{blue}$O(nm\log (n\sqrt{\log U}/m))$\\ \hline
-	1989 & Cheriyan \& Hagerup & \color{blue}$O(nm + n^2 \log^2n)$\\ \hline
-	1990 & Alon & \color{blue}$O(nm + n^{8/3}\log n)$\\ \hline
-	1992 & King et al. & \color{blue}$O(nm + n^{2+\epsilon})$\\ \hline
-	1993 & Philips \& Westbrook & \color{blue}$O(nm (\log_{m/n}n + \log^{2+\epsilon}n))$\\ \hline
-	1994 & King et al. & \color{blue}$O(nm\log_{m/(n\log n)}n)$ \\ \hline
-	\multirow{2}{*}{1997} & Goldberg \& Rao & \color{red}$O(m^{3/2}\log(n^2/m)\log U)$ \\
-	 & & \color{red}$O(n^{2/3}m\log(n^2/m)\log U)$\\ \hline
-    \end{tabular}
-\end{center}
-\end{table}
-\subsubsection{Ford-Fulkerson algorithm}
-\subsection{Markov Random Fields}
-\section{Clustering methods}
-\section{Open-source librarys}
-\subsection{ITK}
-\subsection{OpenCV}
-\subsection{My work}
+\section{My work}
+The above image segmentation methods are from simple to complex, especially the last V-D based level set method, which is proposed by myself. I implement the method in C/C++. The test result shows its great potential on saving the running time significatly.
