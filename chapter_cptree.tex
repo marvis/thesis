@@ -111,7 +111,7 @@ Take the microglia image, of size 156x250x34, as an example. The nodes number of
 \label{fig:cptree-pruning}
 \end{figure}
 
-\subsection{Application for image filtering}
+\subsection{Application for image filtering} \label{sec:cptree-applic}
 As mentioned in the sec.\ref{sec:thresh-cptree}, component tree is considered to be an advanced thresholding techniques, which is the collection of all possible thresholding components. A major use of the component tree is for image filtering \cite{najman2006building}. Fig.\ref{fig:cptree-flywing} shows the filtering result of a fly wing image. The intensity of wings increase gradually from bottom-left to top-right. It is impossible to segment the objects out with single threshold. With pruned component tree, we can get the filtering result by keeping only leaf nodes.
 
 \begin{figure}[htbp]
