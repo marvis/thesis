@@ -45,22 +45,20 @@ Let $L(T)$ denotes all the leaf nodes of T; $root(T)$ denotes the root node of t
 \left\{
 \begin{array}{l}
 X(u,v) \in \{0,1\} \\
-\forall p \in P(T_1), \sum_{u\in p}\sum_{v \in T_2} X(u,v) \le 1 \\
-\forall p \in P(T_2), \sum_{u\in T_1}\sum_{v \in p} X(u,v) \le 1 
+\forall p \in P(T_1), \sum\limits_{u\in p}\sum\limits_{v \in T_2} X(u,v) \le 1 \\
+\forall p \in P(T_2), \sum\limits_{u\in T_1}\sum\limits_{v \in p} X(u,v) \le 1 
 \end{array}
 \right.
 \end{equation}
 
 \subsection{Dynamic programming algorithms (DP)}
-
-
 Jiang \cite{Jiang:95} provided a less constraint tree assignment algorithm.
-For each $A \subseteq \{u_1,u_2,...,u_m\}$, $u_i \in T_1$ and each $B \subseteq \{v_1,v_2,...,v_n\}, v_j \in T_2$. \\
+For each $A \subseteq \{u_1,u_2,...,u_m\}$, $u_i \in T_1$ and each $B \subseteq \{v_1,v_2,...,v_n\}, v_j \in T_2$.
 \begin{eqnarray} \label{eqn:lcdp-formular}
 W(A,B) = \max \begin{cases}
-\max_{a_i \in A, b_j \in B}(W(A-\{a_i\}, B-\{b_j\}) + w(a_i,b_j))\\
-\max_{a_i \in A, B' \subseteq B}(W(A-\{a_i\}, B-B') + W(C(a_i), B')) \\
-\max_{A' \subseteq A, b_j \in B}(W(A-A', B-\{b_j\}) + W(A', C(b_j))
+\max\limits_{a_i \in A, b_j \in B}(W(A-\{a_i\}, B-\{b_j\}) + w(a_i,b_j))\\
+\max\limits_{a_i \in A, B' \subseteq B}(W(A-\{a_i\}, B-B') + W(C(a_i), B')) \\
+\max\limits_{A' \subseteq A, b_j \in B}(W(A-A', B-\{b_j\}) + W(A', C(b_j))
 \end{cases} 
 \end{eqnarray}
 
@@ -107,67 +105,101 @@ Integer linear programming (ILP) and dynamic programming (DP) provide two differ
 \label{fig:treeassign-threepoint2}
 \end{figure}
 
-\subsection{A model for cell spliting and merging}
-The proposed algorithms can only track the movement of cell without cell splitting and cell merging, as the algorithms descirbed above assign the node in one tree to exactly only one node in the other tree. Both ILP model and DP model will loose the track of cells if cell splitting or cell merging exist. (Usually only cell splitting exists in practice.) We improve the linear tree assignment model that each node in one tree can be assigned to many nodes in the other tree. However, the constraint that only one node is assigned in a leaf-to-root-node path is kept. 
+\subsection{An advanced model for cell spliting}
+During cell develepment, the cell may split into two or more small cells. The above algorithms only track the movement of cells without cell splitting, as only one node in a tree is matched to only one node in the other tree. Both ILP model and DP model will loose the track of cells if cell splitting exists. (Usually no cell merging exists in practice.) We improve the linear tree assignment model that each node in one tree can be assigned to many nodes in the other tree. However, the constraint that only one node is assigned in a leaf-to-root-node path is kept. 
 
-Given two trees $T_1$ and $T_2$, for each vertex $u \in T_1$, $v \in T_2$, we introduce additional two binary variables $Y_u$ and $Z_v$ besides $X_{uv}$. $X_{uv} = 1$ if node $u$ is assigned to node $v$, otherwise $X_{uv} = 0$. If node $u$ is assigned to any node in $T_2$, $Y_u = 1$; and $Y_u = 0$ if node $u$ is not assigned. The same rule works for $Z_v$. The relationship between $Y_u$,$Z_v$ and $X_{uv}$ is given by,
+Besides the binary variable $X_{uv}$, we introduce an another binary variable $Y_u$, given two trees $T_1$ and $T_2$ with vertex $u \in T_1$, $v \in T_2$. $X_{uv} = 1$ if node $u$ is assigned to node $v$, otherwise $X_{uv} = 0$. If node $u$ is assigned to any node in $T_2$, $Y_u = 1$; and $Y_u = 0$ if node $u$ is not assigned. The relationship between $Y_u$, and $X_{uv}$ is given by,
 \begin{equation}
+\label{eqn:split-model-yu}
 	Y_u = 
 	\left\{
 	\begin{array}{cc}
-		0 & \text{if \quad $\sum\limits_{v \in T_2}X_{uv} = 0$} \\
-		1 & \text{if \quad $\sum\limits_{v \in T_2}X_{uv} \ge 1$}
+		0 & \text{if \quad $\sum_{v \in T_2}X_{uv} = 0$} \\
+		1 & \text{if \quad $\sum_{v \in T_2}X_{uv} \ge 1$}
 	\end{array}
 	\right.
 	\quad \text{for $u \in T_1$}
 \end{equation}
-\begin{equation}
-	Z_v = 
-	\left\{
-	\begin{array}{cc}
-		0 & \text{if \quad $\sum\limits_{u \in T_1}X_{uv} = 0$} \\
-		1 & \text{if \quad $\sum\limits_{u \in T_1}X_{uv} \ge 1$}
-	\end{array}
-	\right.
-	\quad \text{for $v \in T_2$}
-\end{equation}
+The constraint between $Y_u$ and $X_{uv}$ can be re-written as a constraint in integer linear programming. 
 By considering the condition that only one node is assigned for a leaf-node-to-root-node path, the integer linear model is given by
-\begin{equation}
-\left\{
-\begin{array}{l}
-\sum\limits_{u \in P1 \in P(T_1)}Y_u \le  1 \\
-\sum\limits_{v \in P2 \in P(T_2)}Z_v \le  1 
-\end{array}
-\right.
-\end{equation}
-with the same objective function
-\begin{equation}
-max\sum\limits_{i \in T_1}\sum\limits_{j \in T_2}w_{ij}X_{ij}
-\end{equation}
-
-The constraints for $Y_i$ and $Z_j$ is not clear, which seems like a non-linear interger programming. However there are two kinds of methods to define $Y_i$ and $Z_j$ and turn the problem into linear integer programming.
-
-\textbf{Method 1:}
-\begin{eqnarray}
-\frac{\sum_{v \in T_2}X_{uv}}{|T_2|} \le Y_u \le \sum_{v \in T_2}X_{uv} & \text{for $u \in T_1$} \\
-\frac{\sum_{u \in T_1}X_{uv}}{|T_1|} \le Z_v \le \sum_{u \in T_1}X_{uv} & \text{for $v \in T_2$}
-\end{eqnarray}
-Obviously when $\sum\limits_{u \in T_1}X_{uv}$ equals to zero, $Y_u$ will less than zero, due to the \{0,1\} constraint, $Y_u$ will be zero. When $\sum\limits_{u \in T_1}X_{uv}$ larger than zero,beacuse of $\sum\limits_{u \in T_1}X_{uv}$, $Y_v$ always no greater than $|T_1|$, $Y_u$ will larger then a value, which is larger then zero and no greater than 1. So $Y_u$ will of course be one. This contrains fit the definition of $Y_u$ very well. The contraint also fit to $Z_v$ very well.
-
-\textbf{Method 2:}
-\begin{eqnarray}
-Y_u \ge X_{uv} &\text{for each $v \in T_2$, for $u \in T_1$}\\
-Z_v \ge X_{uv} & \text{for each $u \in T_1$, for $v \in T_2$}\\
-\label{con:multi-align1}
-Y_u \le \sum\limits_{u \in T_1}X_{uv}  & \text{for $u \in T_1$}\\
-\label{con:multi-align2}
-Z_v \le \sum\limits_{v \in T_2}X_{uv}  & \text{for $v \in T_2$}
-\end{eqnarray}
-Once node $u \in T_1$ and node $v \in T_2$ is matched, $X_{uv}$ will be one, and $Y_u$ and $Z_v$ will be no less than $X_{uv}$, so $Y_u$ and $Z_v$ both will be 1. The constraints \ref{con:multi-align1} and \ref{con:multi-align2} is used for nonmatching instances. If node $u \in T_1$ or node $v \in T_2$ is not matched at all, $Y_u$ or $Z_v$ will be 0 either. So now the method 2 fit the definition of $Y_u$ and $Z_v$ perfectly.
+\begin{alignat}{2}
+\nonumber
+    \text{maximize }   \\
+					   & \sum\limits_{i \in T_1}\sum\limits_{j \in T_2}w_{ij}X_{ij} \\
+\nonumber
+    \text{subject to } \\
+					   & X(u,v) \in  \{0,1\}                   & ,\ &\forall u\in T_1, v\in T_2  \\ 
+\label{con:split-model-yu1}
+					   & Y(u) \in  \{0,1\}                     & ,\ &\forall u\in T_1  \\ 
+\label{con:split-model-yu2}
+					   & Y_u \ge X_{uv}                        & ,\ &\forall u\in T_1, v\in T_2  \\
+\label{con:split-model-yu3}
+					   & Y_u \le \sum\limits_{v \in T_1}X_{uv} & ,\ &\forall u\in T_1 \\
+\label{con:split-model-path1}
+                       & \sum\limits_{u \in p}Y_u \le 1                           & ,\ &\forall p \in P(T_1) \\
+\label{con:split-model-path2}
+                       & \sum\limits_{u\in T_1}\sum\limits_{v \in p} X(u,v) \le 1 & ,\ &\forall p \in P(T_2)
+  \end{alignat}
+where constraints \ref{con:split-model-yu1}, \ref{con:split-model-yu2}, and \ref{con:split-model-yu3} realized the equantion \ref{eqn:split-model-yu} in the framework of integer linear programming; constraints \ref{con:split-model-path1} and \ref{con:split-model-path2} realized that only one node is match in a leaf-node-to-root path.
 
 \section{Neuron tree assignment}
+The trees in above tree assignment is a topological structure. However, the tree could also be a real tree structure like neuron tree, where each node is a particle with absolute position. When aligning between neuron trees (see Fig.\ref{fig:treeassign-nt}A), the constraint of only one node match in a leaf-node-to-root-node is not necessary. To match the neuron trees, we apply a very loosely constraint that the matching between nodes should be in sequence order (see Fig.\ref{fig:treeassign-nt}B and Fig.\ref{fig:treeassign-nt}C). 
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=1.0\textwidth]{images/treeassign_nt}
+\caption[The alignment between neuron trees]{A. The alignment between neuron trees; B. The allowable matching in sequence order; C. The forbidden matching with reverse order.}
+\label{fig:treeassign-nt}
+\end{figure}
+
 \subsection{Two points condition}
-\subsection{Optimization formula}
+The match between neuron trees can be summarized as a two points condition. We defined the tree assignment matching $M \in$ match$(T_1,T_2)$ if for any two assignments $(a_1,a_2),(b_1,b_2) \in M$, we have
+$$
+a_1 \preceq b_1 \Rightarrow a_2 \preceq b_2
+$$
+
 \subsection{Integer linear programming}
+The two points condition can be implemented by integer linear programming. Given two neuron trees $T_1$ and $T_2$. For vertices $a\in T_1$, $c\in T_2$, we introduce a binary variable $X_{ac}$. The integer linear model is defined as,
+\begin{eqnarray}
+X_{ac} + X_{bd} \le 1  & \mbox{ if } a \prec b \mbox{ and } c \not\preceq d \mbox{ or } a \not\preceq b \mbox{ and } c \prec d
+\end{eqnarray}
+The target function is
+$$
+\max\sum w_{ac} X_{ac}
+$$
 \subsection{Dynamic programming algorithms}
+For vertice $u \in T$, define $T(u)$ as the subtree rooted from $u$; define $C(u)$ as the child nodes of $u$; define $F(u)$ as the forest with trees rooted from $C(u)$. For forest $A$, define $R(A)$ as the root nodes of the trees in $A$. For forests $A$ and $B$, define $w(A,B)$ as the maximum matching score between $A$ and $B$. To solve the neuron tree assignment under two points condition, we have the fellowing formulas.
+\begin{equation} \label{eqn:nt-wTT}
+w(T(a), T(b)) = w(a,b) + \max\left\{ \begin{array}{l}
+                    w(T(a), F(b)) \\
+					w(F(a), T(b))
+					\end{array} \right.
+\end{equation}
+\begin{equation}\label{eqn:nt-wTB}
+w(T(a), B) = \max\left\{ \begin{array}{l}
+                    \max_{b_j \in R(B)}w(T(a), T(b_j)) \\
+	                w(F(a), B)
+			     \end{array} \right.
+\end{equation}
+\begin{equation}\label{eqn:nt-wAT}
+w(A, T(b)) = \max\left\{ \begin{array}{l}
+                  \max_{a_i \in R(A)} w(T(a_i), T(b))\\
+				  w(A, F(b))
+				  \end{array} \right.
+\end{equation}
+\begin{equation}
+w(A,B) = \max\left\{ \begin{array}{llcl}
+			 \max_{a_i \in R(A), b_j \in R(B)} & w(T(a_i), T(b_j)) & + & w(A-a_i, B-b_j) \\
+			 \max_{a_i \in R(A), B' \subset B} & w(F(a_i), B') & + & w(A-a_i, B-B') \\
+			 \max_{A' \subset A, b_j \in R(B)} & w(A', F(b_j)) & + & w(A-A', B-b_j)
+	\end{array} \right.
+\end{equation}
+By combining Eqn.\ref{eqn:nt-wTT}, Eqn.\ref{eqn:nt-wTB}, and Eqn.\ref{eqn:nt-wAT}, we have
+\begin{equation}
+w(T(a), T(b)) = w(a,b) + \max\left\{ \begin{array}{l}
+                    \max_{a_i \in C(a)} w(T(a_i), T(b)) \\
+                    \max_{b_j \in C(b)} w(T(a), T(b_j)) \\
+					w(F(a), F(b))
+					\end{array} \right.
+\end{equation}
 \section{Cell Tracking results}
