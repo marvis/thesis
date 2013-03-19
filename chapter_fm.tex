@@ -1,6 +1,36 @@
 \chapter{Fastmarching method} \label{chpt:fm}
-\section{Heap structure}
+The fast marching (FM) algorithm \cite{sethian1999level}, which is essentially a region-growing scheme, plays an important role in APP2. Both GSDT and initial neuron reconstruction are implemented in the fast marching framework. 
+
 \section{Algorithm flow}
+In FM, we model an image as a graph, where each graph vertex corresponds to an image pixel (voxel). There is an edge between each pair of immediately neighboring pixel-vertices. FM grows the image graph from a set of predefined seed vertices to all remaining image pixel-vertices in a distance-increasing order.  All image pixels are divided into three groups, labeled as \emph{ALIVE}, \emph{TRIAL} and \emph{FAR}. 
+
+FM has two main steps: initialization and recursion. First, all the seed vertices are initialized to be \emph{ALIVE}; the neighbors of seeds are initialized as \emph{TRIAL}; and the rest are set as \emph{FAR}. Then, from the set of \emph{TRIAL} vertices, we will extract one vertex x, which has the minimum distance value to the \emph{ALIVE} set. The extracted vertex x is then converted from \emph{TRIAL} to \emph{ALIVE}.  For any non-\emph{ALIVE} neighbor y of x, we set it to \emph{TRIAL} if it is \emph{FAR}. The distance function of y is updated as (also see below for concrete definitions)
+\begin{equation}
+d(y)=min⁡{d(y),d(x)+e(x,y)}
+\end{equation}
+
+where $e(x,y)$ is the distance between vertex $x$ and vertex $y$ (see below for definition of $e(x,y)$). FM recursively extracts the vertex that has the minimum-distance from the \emph{TRIAL} set until it becomes empty.
+An important implementation trick of FM is to maintain \emph{TRIAL} vertices in a Fibonacci heap so that the required minima can be obtained efficiently. See Alg.\ref{alg:fast-marching} for the algorithm flow of FM.
+
+\begin{algorithm}[H]
+\label{alg:fast-marching}
+\SetKwInOut{Input}{Input}\SetKwInOut{Output}{Output}
+\SetAlgoLined
+\Input{seed points $x_0,x_1,\ldots,x_n$}
+\Output{Return distance map $d(x)$}
+Initialize distance map $d(x) = \infty$ for all point and mark as \emph{FAR} \;
+Initialize $d(x_0),d(x_1),\ldots,d(x_n)$ to $0$ and mark it as \emph{ALIVE} \;
+Initialize queue of \emph{TRIAL} points $Q = \O$ \;
+Mark \emph{FAR} neighbors of \emph{ALIVE} points as \emph{TRIAL} (add to $Q$) and update $d$ \;
+\While{Q is not empty}{
+Remove minimum point $x$ from $Q$, mark $x$ as \emph{ALIVE}\;
+Mark \emph{FAR} neighbors of $x$ as \emph{TRIAL} and insert into $Q$\; 
+Update $d$ for the neighbors of $x$\;
+}
+\caption{Fast marching algorithm}
+\end{algorithm}
+\subsection{Min Heap}
+Min heap serves as the priority queue in Fast marching method, which enables a fast way to get the minimum element. A min heap is a complete binary tree which contains alternating min and max levels. The root element is always the minimum element in a min-heap. There are two basic operations on a min-heap, that is the inserting an element and deletion the minimum element.
 \section{Different Applications}
 \subsection{Shortest path between any shapes}
 \subsection{Gray-weighted distance transfrom}

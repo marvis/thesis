@@ -74,9 +74,9 @@ Obviously the constrained tree assignment in section \ref{sect:tree-assignment} 
 
 \subsubsection{Running time}
 With the less constrained recurrence, we will get much better result with higher mapping score. However, the time complexity turns out to depend exponentially on the maximum degree of the two trees
-\begin{equation*} \label{eqn:lcdp-time}
+\begin{equation} \label{eqn:lcdp-time}
 O\left(\sum_{u_i \in T_1, v_j \in T_2}(2^{|C(u_i)|}\cdot 2^{|C(v_j)|})\right).
-\end{equation*}
+\end{equation}
 For binary trees, the running time will be
 $O(|T_1|\cdot|T_2)$. \\
 For component trees, the runing time will be 
@@ -202,4 +202,7 @@ w(T(a), T(b)) = w(a,b) + \max\left\{ \begin{array}{l}
 					w(F(a), F(b))
 					\end{array} \right.
 \end{equation}
+
+\subsection{The difference between ILP and DP model}
+For neuron tree assignment, the ILP model and DP model will get equivalent result. The running time for integer linear programming is exponential. And the running time for dynamic model is the same to Eqn.\ref{eqn:lcdp-time}. As the neuron tree is usually binary tree, the running time for DP is nearly linear $O(|T_1|\cdot|T_2|)$.
 \section{Cell Tracking results}
