@@ -265,7 +265,12 @@ Equation\ref{eqn:chanvese} is solved by variational method. Through substituing 
 \end{equation}
 
 \subsubsection{Effect of weights}
-Each energy item in eqn.\ref{eqn:chanvese} is weighted according to real instance. For length energy weight, $\mu$ controls the smoothness of the contour. High $\mu$ value enables a tightly attached contour to the object, whereas low $\mu$ value enables a loosely enclosed contour. The area weight $\nu$ inhibit the growing of inside area. The relative balance between $\lambda_1$ and $\lambda_2$ determines which side, inside or outside, has higher importance in minimizing the energy. 
+Each energy item in eqn.\ref{eqn:chanvese} is weighted according to real instance. 
+\begin{itemize}
+\item[(a)] For length energy weight, $\mu$ controls the smoothness of the contour. High $\mu$ value enables a tightly attached contour to the object, whereas low $\mu$ value enables a loosely enclosed contour. 
+\item[(b)] The area weight $\nu$ inhibit the growing of inside area. 
+\item[(c)] The relative balance between $\lambda_1$ and $\lambda_2$ determines which side, inside or outside, has higher importance in minimizing the energy. 
+\end{itemize}
 
 \subsubsection{Generalizing to N-dimension}
 Chan-Vese model can be naturally extended to N-dimensional image segmentation with the energy function,

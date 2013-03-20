@@ -1,7 +1,7 @@
-\chapter{Fastmarching method} \label{chpt:fm}
-The fast marching (FM) algorithm \cite{sethian1999level}, which is essentially a region-growing scheme, plays an important role in APP2. Both GSDT and initial neuron reconstruction are implemented in the fast marching framework. 
-
-\section{Algorithm flow}
+\chapter{Fast marching method} \label{chpt:fm}
+Fast marching(FM) method \cite{sethian1999level} plays a very important part in both automatic neuron tracing (APP2 method) and human-guided neuron tracing. It is essentially a region-growing scheme and can be used for GSDT and initial neuron reconstruction in APP2 and finding shortest path between rays in human-guided neuron tracing.
+\section{Introduction}
+\subsection{Algorithm flow}
 In FM, we model an image as a graph, where each graph vertex corresponds to an image pixel (voxel). There is an edge between each pair of immediately neighboring pixel-vertices. FM grows the image graph from a set of predefined seed vertices to all remaining image pixel-vertices in a distance-increasing order.  All image pixels are divided into three groups, labeled as \emph{ALIVE}, \emph{TRIAL} and \emph{FAR}. 
 
 FM has two main steps: initialization and recursion. First, all the seed vertices are initialized to be \emph{ALIVE}; the neighbors of seeds are initialized as \emph{TRIAL}; and the rest are set as \emph{FAR}. Then, from the set of \emph{TRIAL} vertices, we will extract one vertex x, which has the minimum distance value to the \emph{ALIVE} set. The extracted vertex x is then converted from \emph{TRIAL} to \emph{ALIVE}.  For any non-\emph{ALIVE} neighbor y of x, we set it to \emph{TRIAL} if it is \emph{FAR}. The distance function of y is updated as (also see below for concrete definitions)
@@ -30,8 +30,11 @@ Update $d$ for the neighbors of $x$\;
 \caption{Fast marching algorithm}
 \end{algorithm}
 \subsection{Min Heap}
-Min heap serves as the priority queue in Fast marching method, which enables a fast way to get the minimum element. A min heap is a complete binary tree which contains alternating min and max levels. The root element is always the minimum element in a min-heap. There are two basic operations on a min-heap, that is the inserting an element and deletion the minimum element.
-\section{Different Applications}
+Min heap serves as the priority queue in Fast marching method, which enables a fast way to get the minimum element. A min heap is a complete binary tree for which the root element is always the minimum element in a min-heap. There are two basic operations in a min-heap, that is the inserting an element and deleting the minimum element.
+
+\subsection{Differnce from dijkstra's algorithm}
+In general, fast marching method is the same to Dijkstra's algorithm except that FM applys dynamic weight function. In fast marhcing method, the weight for each edge can be calculate when the edge is under marching.
+\section{Applications}
 \subsection{Shortest path between any shapes}
 \subsection{Gray-weighted distance transfrom}
 \subsection{Generalized voronoi diagram for shapes} \label{subsec:gvd}

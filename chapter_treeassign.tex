@@ -1,4 +1,4 @@
-\chapter{Tree assignment and tracking results} \label{chpt:treeassign}
+\chapter{Tree assignment methods} \label{chpt:treeassign}
 Our cell tracking method needs to generate a bipartite matching \cite{mosig2009tracking, Xiao:2011} between consective component trees, which performs the role of both cell segmentation and cell association. In the most general form, generalizations of bipartite matching to trees have recently been shown to be $\mathcal{NP}$-hard\cite{canzar2011tree}.
 In this thesis, we introduced two types of tree assignment problems. One is tree assignment between component trees, the other is tree assignment between neuron trees. Both models can be implemented by integer linear programming(ILP) and dynamic programming(DP). The two types of solution have different running time which depends on the complexity of tree structure. The tree assignment between trees with each node of few child nodes, such as component tree, is suitable to use DP, otherwise it is suitalbe to use ILP.
 
@@ -78,11 +78,13 @@ With the less constrained recurrence, we will get much better result with higher
 O\left(\sum_{u_i \in T_1, v_j \in T_2}(2^{|C(u_i)|}\cdot 2^{|C(v_j)|})\right).
 \end{equation}
 For binary trees, the running time will be
-$O(|T_1|\cdot|T_2)$. \\
+$O(|T_1|\cdot|T_2)$.\\ 
 For component trees, the runing time will be 
-$O\left(2^{|C(r_1)|}\cdot2^{|C(r_2)|}\right)$. \\
+$O\left(2^{|C(r_1)|}\cdot2^{|C(r_2)|}\right)$.
+ 
 \subsubsection{Improvement}
-Firstly we define the overlap between $A$ and $B$. We mean $A$ and $B$ have overlap that there exists some element in $A$ ovelaping with some element in $B$, otherwise no overlap.\\ 
+Firstly we define the overlap between $A$ and $B$. We mean $A$ and $B$ have overlap that there exists some element in $A$ ovelaping with some element in $B$, otherwise no overlap.
+
 When dealing with tree-assignments involving component trees, note that in practice many $A$ and $B$ have no overlap, or only few elements in $A$ overlap with few elements in $B$. The non-overlaping A and B can be neglected in the assignment. The overlaping A and B can be decomposed into disjoint subsets $A=A_0 \cup \ldots \cup A_n$ and $B = B_0 \cup \ldots \cup B_n$ such that $A_1 \cup B_1, \ldots, A_n \cup B_n$ are the connected components in graph $G(V, E)$ , that $V = A \cup B$ and $E = \{(a,b)|a \in A, b \in B, \beta(a) \cap \beta(b) \neq \emptyset\}$,  and $A_0$ and $B_0$ are the collection of isolated nodes of $A$ and $B$. As $A_0$ and $B_0$ can be neglected in the assignment, we have 
 \begin{equation*} \label{eqn:ldcp-decomp}
 W(A,B) = \sum_{k=1,\ldots,n}{W(A_k, B_k)}
@@ -205,4 +207,3 @@ w(T(a), T(b)) = w(a,b) + \max\left\{ \begin{array}{l}
 
 \subsection{The difference between ILP and DP model}
 For neuron tree assignment, the ILP model and DP model will get equivalent result. The running time for integer linear programming is exponential. And the running time for dynamic model is the same to Eqn.\ref{eqn:lcdp-time}. As the neuron tree is usually binary tree, the running time for DP is nearly linear $O(|T_1|\cdot|T_2|)$.
-\section{Cell Tracking results}
