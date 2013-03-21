@@ -13,7 +13,7 @@ In pratice, a component tree usually considers all threshold values with all pos
 \caption[An example of component tree with four levels and five components]{The component tree with five different values. A. the original image; B. The corresponding component tree; C. the key threshold values}
 \label{fig:cptree-example}
 \end{figure}
-\subsection{The $\alpha$ and $\beta$ area}
+\subsection{The $\alpha$ and $\beta$ area} \label{sec:alpha-beta-area}
 Each node in the component tree is mapped to a connected area, which is denoted as its $\beta$ area. As the $\beta$ area includes the $\beta$ areas of all its child nodes, we can define the $\alpha$ area of a node which is its $\beta$ area exclusive of all its child nodes. Thus, for each node $v$, we have
 $$
 \beta(v) = \alpha(v)\cup\bigcup_{v_i \in C(v)} \beta(v_i)   

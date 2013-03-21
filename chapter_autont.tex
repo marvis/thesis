@@ -148,7 +148,7 @@ Dragonfly C190 &	32.6 &	7.6	& 1.3 \\ \hline
 \end{table}
 
 \subsection{Comparison with other methods}
-We examined the robustness of APP2 by tracing images where signal were deleted \cite{peng2010automatic}. Three levels of signal deletion, 30\%, 60\% and 90\% were tested (Fig. \cite{fig:autont-fig3}). We compared APP2 to several previous automated methods in the public domain, including APP \cite{peng2011automatic}, NeuronStudio \cite{rodriguez2008automated}, and SimpleTracing \cite{yang2013distance} , as well as the "ground truth" reconstruction, which was obtained by combining semi-automatic tracing and manual editing. To make a fair com-parison, the reported results of competing methods correspond to the best possible parameters fine-tuned in our testing. 
+We examined the robustness of APP2 by tracing images where signal were deleted \cite{peng2010automatic}. Three levels of signal deletion, 30\%, 60\% and 90\% were tested (Fig. \ref{fig:autont-fig3} and Fig. \ref{fig:autont-fig3-2}). We compared APP2 to several previous automated methods in the public domain, including APP \cite{peng2011automatic}, NeuronStudio \cite{rodriguez2008automated}, and SimpleTracing \cite{yang2013distance} , as well as the "ground truth" reconstruction, which was obtained by combining semi-automatic tracing and manual editing. To make a fair com-parison, the reported results of competing methods correspond to the best possible parameters fine-tuned in our testing. 
 
 We calculated several difference scores of the reconstructions produced by the automated methods and the "ground truth". These difference scores measure the "spatial distance" between a particu-lar reconstruction and the ground truth, as well as the percentage of reconstruction elements that have significant, i.e. visible, distance to the nearest reconstruction elements in the "ground truth". These scores, as previously defined in Peng et al.\cite{peng2010v3d}, are called en-tire structure average (ESA), different structure average (DSA) and percent of different structure (PDS) for simplicity in this paper. 
 
@@ -182,6 +182,12 @@ The 629 successfully traced neurons (Fig. \ref{fig:autont-fig4}e) make up one of
 \includegraphics[width=1.0\textwidth]{images/autont_fig3}
 \caption[Comparison with different neuron tracing methods subject to the deletion noise]{Comparison with different neuron tracing methods subject to the deletion noise. The reconstructions are overlaid on top of the original images for better visualization. The fourth row corresponds to 90\% signal is deleted. Since it is so dark in this case, we set pixel intensity threshold to 1 so that we are able to compare all different methods. Right side subfigures: the three difference-scores compared to the “ground truth” reconstruction. NS: NeuronStudio. ST: SimpleTracing.}
 \label{fig:autont-fig3}
+\end{figure}
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=.7\textwidth]{images/autont_fig3_2}
+\caption{The signal deletion result of APP2 on Fly OP1 data}
+\label{fig:autont-fig3-2}
 \end{figure}
 
 \begin{figure}[htbp]
