@@ -1,4 +1,6 @@
 \chapter{Image segmentation} \label{chpt:imgseg}
+As introduced in Section \ref{}, cell tracking is an essential task for studying cell motility on a phenotypical level.
+
 For the cell tracking methods which seperate the segmentation and association steps, the segmentation quality influences the whole tracking result significantly. A good segmentation for the objects in each frame is very important especially in the very early frames. Because the segmentation results of priori frame affects the segmentation results of later frames, that the missing-segmentation of an object will be very likely to be miss tracked in later frames.
 
 Image segmentation are basically \emph{ad-hoc} problems. Different segmentation emphasize one or more of the desired properites. During the past 40 years, hundreds of segmentation algorithms have been proposed \cite{freixenet2002yet}. Some basic segmentation methods, such as global/local thresholding and some complex segmentation models, such as active contour, chanvese's method , and graph cut method, will be introduced in this chaper.
