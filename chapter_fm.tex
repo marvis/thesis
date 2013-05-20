@@ -29,7 +29,6 @@ Update $d$ for the neighbors of $x$\;
 }
 \caption{Fast marching algorithm}
 \end{algorithm}
-\subsection{Min Heap}
 
 \subsection{Differnce from dijkstra's algorithm}
 In general, fast marching method is the same to Dijkstra's algorithm except that FM applys dynamic weight function. In fast marhcing method, the weight for each edge can be calculate when the edge is under marching.
@@ -66,12 +65,18 @@ In the right column, $I(v)$ is image intensity at location $v$, $g_I(v)$ is expo
 \label{tab:fm-app}
 \end{table}
 
-\subsection{Shortest path for 3D curve drawing}
+\subsection{3D curve drawing}
 \label{sect:fm-3dcurve}
-Draw 3D curve is a post-processing step to correct the tracing errors during automatic neuron tracing \cite{peng2011automatic, Xiao:2011}. VAA3D \cite{peng2010v3d} provides a solution to select a 3D marker by clicking mouse once or twice at most. However, it is not realistic to choose 3d markers one by one to draw a 3D curve. The convinient operation is to draw a 3D curve on 2D projection plane directly. Accuately, a drawing curve on 2D projection plane is lots of sampling lines (see Figure \ref{fig:fm-dynamic-drawing}A) perpendicular to the projection plane. Therefore, there exist lots of potiential 3D curves corresponding to the drawing curve. To find the 3D curve (see Figure \ref{fig:fm-dynamic-drawing}B) that exactly represents the neuron segment is a tough task. Due to the narrow application, there isn't too much research about it.\\
-Currently only VAA3D provides some solutions for the problem. The main idea is to use meanshift \cite{comaniciu2002mean} to estimate the 3D position for each sampling line and each meanshift estimation starts from the previous estimation position. However, for complex background noise, meanshift will fail to find the correct 3d curve (see Figure \ref{fig:fm-meanshift-drawing}B). That is because meanshift will attract to local maximum center when there exists strong background noise. To overcome the problem, it is needed to define a global optimaized model by considering all internal sampling lines. \\
-\subsubsection{Shortest path model}
-Shortest path provide a good model for choosing the best 3d curve. The model assumes that the expected 3d curve is the shortest path by accrossing all the internal sampling lines including the first and last sampling lines. The length between consective vertices (or points) $v_0$ and $v_1$ is defined as, 
+Draw 3D curve is a post-processing step to correct the tracing errors during automatic neuron tracing \cite{peng2011automatic, Xiao:2011}. VAA3D \cite{peng2010v3d} provides a solution to select a 3D marker by one or two mouse click(s). However, it is not realistic to choose 3D markers one by one to draw a 3D curve. The convinient operation is to draw a 3D curve on 2D projection plane directly. Accuately, a drawing curve on 2D projection plane is lots of parallel sampling rays (see Figure \ref{fig:fm-dynamic-drawing}A), which are perpendicular to the projection plane. There exist lots of potiential 3D curves corresponding to the drawing curve. To get the exact 3D curve that we want, one possible solution is to draw the 3D curve twice from different views and then we find the intersection points. However, this is not a perfect solution as it needs too many drawing operations.
+
+To find the 3D curve (see Figure \ref{fig:fm-dynamic-drawing}B) that is exactly what we want,  VAA3D provides some solutions for the problem. The main idea in VAA3D is to estimate the 3D position for each sampling ray by using meanshift \cite{comaniciu2002mean} algorithm. However, for complex background noise, meanshift may fail to find the correct 3D position(see Figure \ref{fig:fm-meanshift-drawing}B), as meanshift will attract to local maximum center when strong background noise exists. 
+
+Here, we provide a method to solve curving drawing problem, which contains two novel ideas. First idea is to find the shortest path between two rays, which is solved under fast marching framework. Second idea is to find the shortest path that accross all sampling rays, which is assumed to be the expected 3d drawing curve.
+
+\subsubsection{Shortest path between two rays}
+This problem can be perfectly sovled by fastmarching method. Assume we draw the curve from subject ray to target ray. Firstly, all the vertices on the subject ray will be used as seed points. Then marching from the seed points until all vertices on the target ray are marched. From the resulting distance tree, we can easily get the shortest path by reverse from each vertex on the target ray until the first vertex on the source ray is visited. In practice, there is no need to march all vertices on the target ray; normally when 50\% vertices are marched, the marching process can stop.
+
+The length between consective vertices (or points) $v_0$ and $v_1$ is defined as, 
 $$
 e(v_0,v_1) = ||v_0 - v_1||\cdot \left( \frac{g_I(v_0) + g_I(v_1)}{2} \right)
 $$
@@ -80,14 +85,22 @@ $$
 g_I(v_i) = exp(\lambda_I(1-I(v_i)/I_{max})^2)
 $$
 where $I(v_i)$ is the intensity of vertex $v_i$ and $I_{max}$ is the maximum intensity of the entire image $I$. So the edge length between bright points will be very small, which ensure the shortest path go accross the continuous bright points as much as possible.
-For the proposed model, there are two problems needed to sovle. First, find all shortest paths from subject line to all vertices on the target line. Second, find the global shortest path accrossing all internal lines.
-\subsubsection{Find all shortest paths}
-In this step, we need to find the shortest path from the subject line to each vertex on the target line. This problem can be perfectly sovled by fastmarching method. Firstly, all the vertices on the subject line will be used as seed points. Then marching from the seed points until all vertices on the target line are marched. From the resulting distance tree, we can easily get the shortest path by reverse from each vertex on the target line until the first vertex on the source line is visited. In practice, there is no need to march all vertices on the target line; normally when 50\% vertices are marched, the marching process can stop.\\
-This problem is the extension of finding the shortest path between two lines. And it is not restricted to lines, any two groups of points can find the shortest path by using fastmarching method.
-\subsubsection{Find global shortest path}
-After finding all shortest path between first and second line, we can get the shortest marching distance for the vertex on second line. This value can be used to initialize $\phi(v)$ when the second line march to third line to find all the shortest path. Actually, the resulting shortest path is the shortest path from first line to vertices on third line by accrossing some vertex on second line. Continusly finding the shortest paths, we will find all shortest paths from the first line to the last line by accrossing all internal lines. We just need to choose the path, which firstly reach the last line, as the final 3D curve (see model on Figure \ref{fig:fm-dynamic-compare}A and result on Figure \ref{fig:fm-dynamic-drawing}C).
-\subsubsection{Further optimization}
-The global optimized result is not always good when the sampling line deviated to background (see Figure \ref{fig:fm-dynamic-compare}C). Actually, the sampling line should be used as a reference to indicate that the 3D curve should near to the line. For consective lines, we can set a bounding box. So we can change the model as the 3D curve is the shortest path from the first line to the last line by accrossing the boudingboxes between consective lines (see Figure \ref{fig:fm-dynamic-compare}B). We can see the different drawing results with same sampling lines, Fig.\ref{fig:fm-dynamic-compare}C for original model and Fig.\ref{fig:fm-dynamic-compare}D for improved model. The original model may produce lots of spurs near sampline lines while the impoved model produces much smoother result.
+
+\textbf{Extension:} The method for finding the shortest path between two rays is easily extended to finding shortest path between two groups of any points. The rays above is not restricted to parallel rays.
+
+\subsubsection{Shortest path between multiple rays}
+Like the shortest path between two rays, there exist a shortest path that connect multiple rays. One way to connect multiple rays is to simply connect consecutive rays by the shortest path between them. For each non-start/non-end ray, there are two shortest paths connect to it. The problem arises that the two shortest paths are mostly probably not connected, that we still need to connect the two shortest paths which increase the total cost. To solve the problem of disconnected shortest paths, we can use the end point of last shortest path as the start point of the next shortest path instead of starting from a whole ray.
+
+The above suggestions may find a good path but not the global shortest path. To find the global shortest path, we proposed the following steps.
+\begin{itemize}
+\item[a.] find all shortest path from first ray to each vertex on the second ray
+\item[b.] keep the distance value on the second ray and find the shortest path from the second ray to each vertex on the third ray
+\item[c.] iterate the above step until the last ray is reached
+\end{itemize}
+
+Usually we don't need to assure all vertices on a ray are reached, as some vertices are very time consuming to reach. In practice, we set 50\% vertices reached  to start the next iteration.
+\subsubsection{Further optimization for multiple rays}
+The abolve global shortest path is not always good when the sampling ray deviated to background (see Figure \ref{fig:fm-dynamic-compare}C). Actually, the sampling ray should be used as a reference to indicate that the 3D curve should near to the ray. For consective rays, we can set a bounding box. So we can change the model as the 3D curve is the shortest path from the first ray to the last ray by accrossing the boudingboxes between consective rays (see Figure \ref{fig:fm-dynamic-compare}B). We can see the different drawing results with same sampling rays, Fig.\ref{fig:fm-dynamic-compare}C for original model and Fig.\ref{fig:fm-dynamic-compare}D for improved model. The original model may produce lots of spurs near sampling rays while the impoved model produces much smoother result.
 %\includegraphics{2_dynamic.pdf}
 
 \begin{figure}[htb]
@@ -100,8 +113,8 @@ The global optimized result is not always good when the sampling line deviated t
 
 \begin{figure}[htb]
 \begin{center}
-\includegraphics[width=6in]{images/fm_dynamic_drawing}
-\caption{(A) sampling lines. (B) expected 3D curve. (C) the process of global optimized model}
+\includegraphics[width=4in]{images/fm_dynamic_drawing}
+\caption{(A) sampling rays. (B) expected 3D curve. (C) the process of global optimized model}
 \label{fig:fm-dynamic-drawing}
 \end{center}
 \end{figure}
@@ -113,7 +126,9 @@ The global optimized result is not always good when the sampling line deviated t
 \label{fig:fm-dynamic-compare}
 \end{center}
 \end{figure}
-\subsection{Gray-weighted distance transfrom}
+\subsection{Gray-weighted distance transform}
+Normally, the distance transform is perform on binary image. The distance for each foreground point is the minimum euclidean distance to background. To perform distance transform on grayscale image, we can define the distance for each foreground point as the length of its shortest path to background. The length of a path is the sum of gray value of the point on the path. This idea is called gray-weighted distance transform (GWDT) \cite{rutovitz1968data}. To implement this idea, we need to use fast marching method and dynamic programming, for the detail of GWDT, see section \ref{sec:gwdt}.
+
 \subsection{Generalized Voronoi diagram for shapes} \label{subsec:gvd}
 In image processing, a Voronoi diagram \cite{aurenhammer1991Voronoi} is a special kind of decomposition of an image, determined by distances to a group of specified objects. These objects can be many seed points (Figure \ref{fig:fm-Voronoi}A) normally or many cell bodies (Figure \ref{fig:fm-Voronoi}B). The Voronoi Diagram for cell bodies is also called Generalized Voronoi Diagram (GVD) \cite{nath2007accurate}. The decomposted image areas are Voronoi areas. Each Voronoi area is a group of points whose nearest object are the same. Voronoi Diagram can be found in a large number of fields in science and technology, even in art.\\
 There are lots of algorithms proposed to solve the Normal Voronoi Diagram. Lloyd \cite{lloyd1977triangulations} firstly consider the problem as a k-means clustering problem. A more efficent algorithm for generating a Voronoi Diagram in a plane is proposed by Fortune \cite{fortune1987sweepline} in $O(nlog(n))$ time. The method need to scan the image from left to right with a sweep line. For higher dimension image, Bowyer Watson \cite{rebay1993efficient} proposed a method to solve the complementary problem Delaunay triangulation in any number of dimensions. However, these algorithms only solve the Normal Voronoi Diagram problem. For the Generalized Voronoi Diagram problem, there isn't efficient methods \cite{hoff1999fast, takahashi1989motion, nath2007accurate}. Actually either normal Voronoi diagram or generalized Voronoi diagram problems can be considered as a shortest path problem by growing seed points or cell bodies to nearest area. It is a fast marching problem. The only thing we need to do is labeling each object with unique lable. Each pixel will be labeled the same to its nearest object.
@@ -121,7 +136,7 @@ There are lots of algorithms proposed to solve the Normal Voronoi Diagram. Lloyd
 \begin{figure}[htb]
 \begin{center}
 \includegraphics[width=4in]{images/fm_Voronoi}
-\caption[Normal Voronoi diagram and generalized Voronoi diagram]{(A) sampling lines. (B) expected 3D curve. (C) the process of global optimized model}
+\caption[Normal Voronoi diagram and generalized Voronoi diagram]{(A) sampling rays. (B) expected 3D curve. (C) the process of global optimized model}
 \label{fig:fm-Voronoi}
 \end{center}
 \end{figure}
