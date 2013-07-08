@@ -1,8 +1,26 @@
 \chapter{Introduction}
 \section{Background}
-\subsection{Why bioimage informatics matters}
-\subsection{From \emph{in-vitro} to \emph{in-vivo} cell imaging}
-\subsection{The cells in Zebra fish brain}
+\subsection{What is Bioimage Informatics}
+As a subfield of bioinformatics and computational biology \cite{peng2012bioimage}, bioimage informatics focuses on the use of computational techniques to analysis bioimages at large scale and high throughput. It's goal is to obtain the useful information quantatively from complicated and heterogeneous image and related metadata.
+
+Nowadays huge number of bioimages are able to collected from automated microscopes with the development of imaging techniques. Manually analysis (segmentation, registration, tracing, and so on) these data becomes extreme hard and time consuming. It is absolutely requires automatic processing techniques to deal with these data. 
+
+Image processing techniques have been developed for a long time. However, the special application to bioimage data is very limited. There has been an increasing requirement for developping novel image processing, computer vision, data mining, visualization, and database techniques to extract, compare, search and manage the biological knowledge in these data-intensive problems.
+\subsection{Important Problems in bioimage}
+\subsubsection{Segmentation}
+Segmentation of cells is the basic steps for many applications, e.g. cell counting, cell tracking. In 2D/3D, the segmentation is to find the enclosed boundary/surface of a cell. Cell segmentation results can be used to further measure some quantitative information, such as cell volume, cell area, and cell deformation. 
+
+The most used techniques for image segmentation include thresholding, watershed, mean shift, level set and grabcut. Most of these techniques are easily extend to 3D space, however, more computation time will be needed. Due to the complex of image data, there is no good segmentation algorithm which applies to all kinds of image data. Each segmentation method is usually suit for special type of image.
+
+\subsubsection{Tracking}
+Tracking is a traditional image processing problem in bioimage. Cell labeling technique (GFP, RFP, et. al.) enables the microscope to take pictures for moving cells \emph{in-vivo}.
+\subsubsection{Registration}
+\subsubsection{Subcellular location analysis}
+\subsubsection{High-Content Screening}
+\subsection{Why Bioimage Informatics matters}
+
+% A new category of image processing in bioinformatics
+
 \section{Motivation and main contributions}
 The movement of microglia cells and the growing of neuron cells.
 \section{Thesis organization}
