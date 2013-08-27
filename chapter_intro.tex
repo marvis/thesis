@@ -1,12 +1,47 @@
 \chapter{Introduction}
 \section{Background}
-\subsection{What is Bioimage Informatics}
-As a subfield of bioinformatics and computational biology \cite{peng2012bioimage}, bioimage informatics focuses on the use of computational techniques to analysis bioimages at large scale and high throughput. It's goal is to obtain the useful information quantatively from complicated and heterogeneous image and related metadata.
+Biology research by observing cells in microscopy can date back to long ago. Until last decade, such kind of research becomes more and more important and popular in molecular cell biology. This is due to two critical techniques, that are, the discovery of green florencent protein (GFP) \cite{} and the knock down technique\cite{}. Besides the conventional GFP, current labeling methods have extended to enhanced GFP (EGFP) \cite{}, Dronpa \cite{} and Brainbow combinatorial labeling. The biological labeling and knock down techniques help biologists to manipulate genes much easier.
 
-Nowadays huge number of bioimages are able to collected from automated microscopes with the development of imaging techniques. Manually analysis (segmentation, registration, tracing, and so on) these data becomes extreme hard and time consuming. It is absolutely requires automatic processing techniques to deal with these data. 
+With the fast development of biomedical imaging techniques, a great number of complicated molecular and cellular microscopic images were produced, which range from the whole organism level down to the single molecule level. The biological imaging methods include confocal or two-photon laser scanning microscopy (LSM) \cite{} for fluorescence labeled images, scanning or transsimission electron microscopy (EM) \cite{} for 3D reconstruction of cellular organelle or 3D structure of protein. Further more, the novel imaging techniques PALM \cite{} and STED \cite{}, provide much higher resolution then conventional optical microscopes and can pinpoint the location of individual proteins. In developmental biology, light sheet\cite{} microscopes can even image an entire fly brain using optical or electron micoscopy.
+
+The imaging technique is also developing 
+% the developing techniques, 别扯太远
+% the challenge
+% current state to sovle these problems
+% my work
+Since the last decade, bioimage informatics develops
+\subsection{State of the art biological imaging techniques}
+% imaging, 2D->3D, organism -> single cell.
+% labeling
+% knock down
+In the last twenty years, numerous biomedical imaging techniques were developed, with spatial resolutions running from millimeters (whole organism level) to nanometers (single molecule level) \cite{murphy2012fundamentals,Tsien2003} and with dimension from 2D to 3D. 
+Current most widely used biological imaging methods include confocal or two-photon laser scaning microscopy (LSM) 
+
+\begin{table} \label{tab:intro-imaging}
+\caption{Comparison of different biological imaging techniques}
+\begin{center}
+\begin{tabular}{cccc}
+\hline
+Methods	& Description \\ \hline
+
+\end{tabular}
+\end{center}
+\end{table}
+
+
+
+\subsection{A new field: bioimage informatics}
+With the imporvement of light microsopy over last twenty years, deluge of complicated molecular and cellular microscopic images are produced day and light. This creates compelling challenges for the image computing community. Consequently, an emerging new engineering area is formed to develop and use various image data analysis and informatics techniques to extract, compare, search and manage the biological knowledge of the respective images \cite{peng2008bioimage}. This new field is called bioimage informatics, which is a specialization of computer vision and image analysis \cite{myers2012bioimage}. There is no typical bioimage informatician, as the bioimage informatician is either computer vision experts looking for new problems or classic sequence-based bioinformaticians looking for the new thing or physicists and molecular biologists whose experiments require them to bite the informatics bullet. The field is still in its early days.
+
+
+\subsection{Bioimage challenges}
+The difficults
+produce the DIADEM Challenge
+
+The Allen Brain institute
 
 Image processing techniques have been developed for a long time. However, the special application to bioimage data is very limited. There has been an increasing requirement for developping novel image processing, computer vision, data mining, visualization, and database techniques to extract, compare, search and manage the biological knowledge in these data-intensive problems.
-\subsection{Important Problems in bioimage}
+
 \subsubsection{Segmentation}
 Segmentation of cells is the basic steps for many applications, e.g. cell counting, cell tracking. In 2D/3D, the segmentation is to find the enclosed boundary/surface of a cell. Cell segmentation results can be used to further measure some quantitative information, such as cell volume, cell area, and cell deformation. 
 
@@ -21,7 +56,7 @@ Tracking is a traditional image processing problem in bioimage. Cell labeling te
 
 % A new category of image processing in bioinformatics
 
-\section{Motivation and main contributions}
+\section{Motivation and main contributions} \label{sec:contrib}
 The movement of microglia cells and the growing of neuron cells.
 \section{Thesis organization}
 The rest of the thesis is organized as follows. Part 2 describes the cell tracking methods (chapter \ref{chpt:coseg}) and the related image segmentation (chapter \ref{chpt:imgseg}), component tree construction (chapter \ref{chpt:cptree}) and tree assignment methods (chapter \ref{chpt:treeassign}). Part 3 describes the automatic neuron tracing methods (chapter \ref{chpt:auto-nt}), human guided neuron tracing methods (chapter \ref{chpt:manual-nt}) and the powerful fastmarching method (chapter \ref{chpt:fm}).
