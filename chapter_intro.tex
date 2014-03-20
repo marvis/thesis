@@ -1,63 +1,34 @@
 \chapter{Introduction}
-\section{Background}
-Biology research by observing cells in microscopy can date back to long ago. Until last decade, such kind of research becomes more and more important and popular in molecular cell biology. This is due to two critical techniques, that are, the discovery of green florencent protein (GFP) \cite{} and the knock down technique\cite{}. Besides the conventional GFP, current labeling methods have extended to enhanced GFP (EGFP) \cite{}, Dronpa \cite{} and Brainbow combinatorial labeling. The biological labeling and knock down techniques help biologists to manipulate genes much easier.
+\section{Why bioimage informatics matters?}
+% view point1: manually analysis is infeasible
+% techniques developed -> large dataset -> manually analysis unrealistic -> automatic/half automatic algorithm needed -> a new engineering area -> bioimage contribution (conference and challenge)
+In the last decades, numerious bioimaging techniques were developed to monitor biological phenomena with unprecedented resolution, specificity, dimensionality, complexity, and scale. Some of the advanced biological imaging methods include confocal or two-photon laser scanning micorscopy(LSM) \cite{pawley1995handbook}, scanning or transmission electron microscopy (EM) \cite{bozzola1999electron}, PALM \cite{betzig2006imaging}, STORM \cite{rust2006sub}, STED \cite{hell2003toward}. With these modern automated microcopes, a large number of 3D images can be collected very quickly, e.g. the light-sheet microscopes can result in 30 terabytes of data per day \cite{keller2008reconstruction}. The number of biogical images (e.g. cellular, molecular and medical images) acquired in digital forms is growing rapidly. 
 
-With the fast development of biomedical imaging techniques, a great number of complicated molecular and cellular microscopic images were produced, which range from the whole organism level down to the single molecule level. The biological imaging methods include confocal or two-photon laser scanning microscopy (LSM) \cite{} for fluorescence labeled images, scanning or transsimission electron microscopy (EM) \cite{} for 3D reconstruction of cellular organelle or 3D structure of protein. Further more, the novel imaging techniques PALM \cite{} and STED \cite{}, provide much higher resolution then conventional optical microscopes and can pinpoint the location of individual proteins. In developmental biology, light sheet\cite{} microscopes can even image an entire fly brain using optical or electron micoscopy.
+However, due to the lack of necessary analysis tools, such image has been analyzed manually. Manually anotation, e.g. segmentation of cells or tracing of neurons, is, however, slow, expensive, and often highly variable from person to person.
 
-The imaging technique is also developing 
-% the developing techniques, 别扯太远
-% the challenge
-% current state to sovle these problems
-% my work
-Since the last decade, bioimage informatics develops
-\subsection{State of the art biological imaging techniques}
-% imaging, 2D->3D, organism -> single cell.
-% labeling
-% knock down
-In the last twenty years, numerous biomedical imaging techniques were developed, with spatial resolutions running from millimeters (whole organism level) to nanometers (single molecule level) \cite{murphy2012fundamentals,Tsien2003} and with dimension from 2D to 3D. 
-Current most widely used biological imaging methods include confocal or two-photon laser scaning microscopy (LSM) 
+The deluge of complicated biological and biomedical images exposes the great demand for automatic or half-automatic image processing algorithms. As a natural extension of existing biomedical field, a new biological engineer field, that is, bioimage informatics is becoming more and more important in recent years when large scale image dataset appears to be very common.
 
-\begin{table} \label{tab:intro-imaging}
-\caption{Comparison of different biological imaging techniques}
-\begin{center}
-\begin{tabular}{cccc}
-\hline
-Methods	& Description \\ \hline
+% neuron 的产生
+% since the ..., the neuron acts as an very important in transmit information in a organism
+% the neurons is diverse distributed in the brain of organism higher than.
 
-\end{tabular}
-\end{center}
-\end{table}
+% neuron 的发现, 发现了很多， neurons are very diverse and there are exceptions to nearly every rule
+\section{Project 1 : Microglia Cell Tracking Analysis}
+\subsection{Background}
+Capturing the motility of cells using time-lapse microscopy has become an important approach to understanding processes such as the cell cycle (Harder et al., 2009), neuronal division and migration (Norden et al., 2009), immune response (Cahalan and Parker, 2008) or the development of cancer (Ianzini et al., 2009). Based on phase-contrast, confocal or two-photon microscopy, such live cell imaging protocols are now commonly established and corresponding equipment is commonly available. This has triggered the need for computational methods to quantitatively analyze time-lapse microscopy data. In this context, identifying individual cells and tracking their identities over time is one of the basic ingredients for computational analysis. Hence, cell tracking algorithms have attracted considerable attention in recent years (Meijering et al., 2006; Miura, 2005). Here, we introduce a novel algorithm for cell tracking that allows to track cells, in particular zebrafish microglia, in 3D two-photon image sequences over time.
 
+The majority of cell tracking algorithms, as surveyed by Meijering et al. (2006) or Miura (2005), deals with cell tracking in 2D over time. Methods range from linking cells identified in individual frames using different segmentation approaches to active-contour (Dufour et al., 2005; Sacan et al., 2008; Shen et al., 2006) or level-set algorithms (Dzyubachyk et al., 2008; Li et al., 2008b; Mukherjee et al., 2004; Nath et al., 2006). The challenges imposed by the nature of the images to be analyzed lie in phenomena such as cell divisions (Al-Kofahi et al., 2006; Li et al., 2008a), cells entering or leaving the displayed area, or a large number of cells that needs to be tracked simultaneously. In addition, cell tracking is often complicated by background inhomogeneity, for instance due to uneven illumination (Leong et al., 2003), and cells touching each other. While these issues have been addressed extensively for tracking cells in 2D, surprisingly few approaches have addressed cell tracking in 3D. Besides naive thresholding approaches, there are only few advanced approaches, such as the active-contour based method proposed by Dufour et al. (2005). Recently, several authors (Jaensch et al., 2010; Kerekes et al., 2009) proposed reliable methods for tracking centrosomes in Caenorhabditise legans embryos. Yet, these approaches are tailored toward tracking small, bright and circular objects which e.g. resemble a Gaussian spot of a specific size. Such assumptions, however, are not satisfied by the complex and highly variable shapes of microglia under consideration here. Cell tracking is also relevant in the context of tracking cell populations in vitro, which has attracted considerable attention recently (House et al., 2009; Ong et al., 2010; Padfield et al., 2009).
+\subsection{Motivation}
+Cell tracking is an important method to quantitatively analyze time-lapse microscopy data. While numerous methods and tools exist for tracking cells in 2D time-lapse images, only few and very application-specific tracking tools are available for 3D time-lapse images, which is of high relevance in immunoimaging, in particular for studying the motility of microglia in vivo.
+\section{Project 2: Automatic Neuron Tracing}
+\subsection{Background}
+3D reconstruction of complex neuron morphology from light- microscopic images is an important technique for computational neuroscience. It has received considerable attention in recent years, such as in the DIADEM competition (Brown et al., 2011; Gillette et al., 2011) that involved ~100 teams worldwide and many related studies (e.g. Al-Kofahi et al., 2002; Choromanska et al., 2012; Cohen et al., 2011; Donohue et al., 2011; Lu et al., 2009; Meijering et al., 2004, 2010; Narayanaswamy et al., 2011; Narro et al., 2007; Peng et al., 2010a, 2010b, 2011; Vallotton et al., 2007; Wang et al., 2011; Xiong et al., 2006; Zhang et al., 2007a,b; Zhao et al., 2011). However, despite a number of developed algorithms of neuron reconstruction (also called ‘neuron tracing’), it remains a signifi- cant problem how to trace neurons in a robust and precise way from real 3D microscopic images.
 
+\subsection{Motivation}
+Tracing of neuron morphology is an essential technique in computational neuroscience. However, despite a number of existing methods, few open-source techniques are completely or sufficiently automated and at the same time are able to generate robust results for real 3D microscopy images.
 
-\subsection{A new field: bioimage informatics}
-With the imporvement of light microsopy over last twenty years, deluge of complicated molecular and cellular microscopic images are produced day and light. This creates compelling challenges for the image computing community. Consequently, an emerging new engineering area is formed to develop and use various image data analysis and informatics techniques to extract, compare, search and manage the biological knowledge of the respective images \cite{peng2008bioimage}. This new field is called bioimage informatics, which is a specialization of computer vision and image analysis \cite{myers2012bioimage}. There is no typical bioimage informatician, as the bioimage informatician is either computer vision experts looking for new problems or classic sequence-based bioinformaticians looking for the new thing or physicists and molecular biologists whose experiments require them to bite the informatics bullet. The field is still in its early days.
+Automation of neuron tracing for complex neuron morph- ology and low quality image data has been previously discussed in the All-Path-Pruning (APP) method (Peng et al., 2011). The key idea of APP is to generate an initial reconstruction that covers all the potential signal of a neuron in a 3D image, fol- lowed by a linear-time pruning of unneeded branches until a least compact representation is produced while the coverage of all neuronal signal is maintained.
 
-
-\subsection{Bioimage challenges}
-The difficults
-produce the DIADEM Challenge
-
-The Allen Brain institute
-
-Image processing techniques have been developed for a long time. However, the special application to bioimage data is very limited. There has been an increasing requirement for developping novel image processing, computer vision, data mining, visualization, and database techniques to extract, compare, search and manage the biological knowledge in these data-intensive problems.
-
-\subsubsection{Segmentation}
-Segmentation of cells is the basic steps for many applications, e.g. cell counting, cell tracking. In 2D/3D, the segmentation is to find the enclosed boundary/surface of a cell. Cell segmentation results can be used to further measure some quantitative information, such as cell volume, cell area, and cell deformation. 
-
-The most used techniques for image segmentation include thresholding, watershed, mean shift, level set and grabcut. Most of these techniques are easily extend to 3D space, however, more computation time will be needed. Due to the complex of image data, there is no good segmentation algorithm which applies to all kinds of image data. Each segmentation method is usually suit for special type of image.
-
-\subsubsection{Tracking}
-Tracking is a traditional image processing problem in bioimage. Cell labeling technique (GFP, RFP, et. al.) enables the microscope to take pictures for moving cells \emph{in-vivo}.
-\subsubsection{Registration}
-\subsubsection{Subcellular location analysis}
-\subsubsection{High-Content Screening}
-\subsection{Why Bioimage Informatics matters}
-
-% A new category of image processing in bioinformatics
-
-\section{Motivation and main contributions} \label{sec:contrib}
-The movement of microglia cells and the growing of neuron cells.
 \section{Thesis organization}
 The rest of the thesis is organized as follows. Part 2 describes the cell tracking methods (chapter \ref{chpt:coseg}) and the related image segmentation (chapter \ref{chpt:imgseg}), component tree construction (chapter \ref{chpt:cptree}) and tree assignment methods (chapter \ref{chpt:treeassign}). Part 3 describes the automatic neuron tracing methods (chapter \ref{chpt:auto-nt}), human guided neuron tracing methods (chapter \ref{chpt:manual-nt}) and the powerful fastmarching method (chapter \ref{chpt:fm}).
 
