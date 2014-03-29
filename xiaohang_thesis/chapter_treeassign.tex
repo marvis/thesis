@@ -1,0 +1,209 @@
+\chapter{Tree assignment methods} \label{chpt:treeassign}
+Our cell tracking method needs to generate a bipartite matching \cite{mosig2009tracking, Xiao:2011} between consective component trees, which performs the role of both cell segmentation and cell association. In the most general form, generalizations of bipartite matching to trees have recently been shown to be $\mathcal{NP}$-hard \cite{canzar2011tree}.
+In this thesis, we introduced two variants of tree assignment problems. One is tree assignment between component trees, the other is tree assignment between neuron trees. Both models can be implemented by integer linear programming (ILP) and dynamic programming (DP). The two types of solution have different running time which depends on the complexity of tree structure. The tree assignment between trees with each node of few child nodes, such as component tree, is suitable to use DP, otherwise it is suitable to use ILP.
+
+\section{Component tree assignment}
+\subsection{Problem formulation}
+Let $T_1$ and $T_2$ denote two rooted unordered trees, with vertexes $U$ and $V$, respectively.  We refer to the set of all possible assignments between $T_1$ and $T_2$ as $\mathrm{match}(T_1,T_2) =\Big\{M \subset U \times V | M = \{(u_1,v_1),\ldots,(u_k,v_k)\}\Big\}$. Given a weighting function $w:U\times V \to \mathbb{R}_{\le 0}$, we can assign a weight $W(M) := \sum_{(u,v)\in M}w_{u,v}$ to an assignment $M \in$ match$(T_1,T_2)$. Putting things together, this allows us to define the \emph{tree assignment problem}, which is to find the maximum weighted tree assignment $M$, given $T_1,T_2$ and $w$. The tree assignment problem is a generalization of maximum weighted bipartite matching problem.
+\subsubsection{Restricted tree assignments}
+We deal with tree assignments under \emph{three point condition} for component tree assignment base cosegmentation, which introduces a restriction on the topology of assigned nodes involving three vertexes. We adapt the recursions for the constrained tree edit distance \cite{Jiang:95} to solve the restricted tree assignment problem.
+
+The three-point condition involves the lowest common ancestor of two vertexes $a,b$ in a tree, which we denote by $\mathrm{lca}(a,b)$. Now, we defined the tree assignment matching $M \in \mathrm{match}(T_1,T_2)$ if for any tree assignments $(a_1,a_2),(b_1,b_2),(c_1,c_2) \in M$, we have
+$$
+\mathrm{lca}(a_1,b_1) \preceq \mathrm{lca}(a_1,c_1)  \Rightarrow \mathrm{lca}(a_2,b_2) \preceq \mathrm{lca}(a_2,c_2)
+$$
+
+Intuitively, the three-point condition ensures that for any tree pairs of vertexes in an assignment, the topology of the two induced sub-trees are in the same heirarchical order, see Figure \ref{fig:treeassign-threepoint}A.  
+\subsubsection{Component trees}
+A component tree of an image maintains the inclusion relationship between all possible connected component under all different threshold segmentation. Najman et al.\cite{Najman:04} introduced a quasi-linear algorithm to construct the component tree. A pruning algorithm to simplify the component tree structure was introduced in Chapter\ref{chpt:cptree}.
+
+\subsubsection{Component tree weights}
+The weight between nodes in two component trees is defined as the ratio of overlapping size and union size. I introduced a quasi-linear dynamic algorithm to compute all weights between any pairs of nodes in two component trees in Section \ref{sec:cptree-weight}.
+\subsection{Integer linear programming based tree assignments}
+Given two trees $T_1$ and $T_2$ to satisfy the \emph{three point condition}, we introduce the match $M \in \mathrm{match}(T_1,T_2)$ such that for any two distinct indices $1 \le i,j \le k$, neither $u_i$ is an ancestor/descendant of $u_j$ nor $v_i$ is an ancestor/descendant of $v_j$. 
+
+For each vertex $u \in T_1, v \in T_2$, introduce binary variable $X_{uv}$, where $X_{uv} = 1$ iff $u$ is assigned to $v$, otherwise $X_{uv} = 0$. For any node $u, u' \in T_1$ and $v, v' \in T_2$, we can define the integer linear model with constraints,
+\begin{equation}
+\label{eqn:cptree-ilp-st}
+\left\{
+\begin{array}{l}
+X(u,v) \in \{0,1\} \\
+\forall u \preceq u', X(u,v) + X(u',v') \le 1 \\
+\forall v \preceq v', X(u,v) + X(u',v') \le 1 
+\end{array}
+\right.
+\end{equation}
+and the objective function by maximum the sum of weight function,
+\begin{equation}
+ \max \sum_{u\in T_1, v \in T_2} w(u,v)X(u,v)
+\end{equation}
+
+For the constraints \ref{eqn:cptree-ilp-st}, the first constraint ensures the binary values for assignment variable, the second and third constraint ensure that only one node is matched in a leaf-node-to-root-node path in both trees (see Fig\ref{fig:treeassign-cptree}A and Fig\ref{fig:treeassign-cptree}B). 
+
+Let $L(T)$ denotes all the leaf nodes of T; $\mathrm{root}(T)$ denotes the root node of tree $T$; $\mathrm{path}(u,v) = \{u_1 = u,u_2, \ldots, u_{n-1}, u_n = v\}$ denotes the path from node $u$ to node $v$; $P(T) = \{\mathrm{path}(u, \mathrm{root}(T))|u \in L(T)\}$ denotes all the leaf-node-to-root-node paths. The above constraints \ref{eqn:cptree-ilp-st} can be re-written as,
+\begin{equation}
+\left\{
+\begin{array}{l}
+X(u,v) \in \{0,1\} \\
+\forall p \in P(T_1), \sum\limits_{u\in p}\sum\limits_{v \in T_2} X(u,v) \le 1 \\
+\forall p \in P(T_2), \sum\limits_{u\in T_1}\sum\limits_{v \in p} X(u,v) \le 1 
+\end{array}
+\right.
+\end{equation}
+
+\subsection{Dynamic programming algorithms (DP)}
+Jiang \cite{Jiang:95} provided a less constraint tree assignment algorithm.
+For each $A \subseteq \{u_1,u_2,...,u_m\}$, $u_i \in T_1$ and each $B \subseteq \{v_1,v_2,...,v_n\}, v_j \in T_2$.
+\begin{eqnarray} \label{eqn:lcdp-formular}
+W(A,B) = \max \begin{cases}
+\max\limits_{a_i \in A, b_j \in B}(W(A-\{a_i\}, B-\{b_j\}) + w(a_i,b_j))\\
+\max\limits_{a_i \in A, B' \subseteq B}(W(A-\{a_i\}, B-B') + W(C(a_i), B')) \\
+\max\limits_{A' \subseteq A, b_j \in B}(W(A-A', B-\{b_j\}) + W(A', C(b_j))
+\end{cases} 
+\end{eqnarray}
+
+Assume $r_1$ is the root node of $T_1$ and $r_2$ the root of $T_2$, the solution of tree assignment will be $W(C(r_1), C(r_2))$.
+Obviously the constrained tree assignment in Section \ref{sect:tree-assignment} is covered as a special case by applying the first case of Eqn.\eqref{eqn:lcdp-formular}. 
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=1.0\textwidth]{images/treeassign_cptree}
+\caption[ILP and DP models for component tree assignment]{ILP and DP models for component tree assignment. \emph{A.} The second constraint in ILP model \ref{eqn:cptree-ilp-st} for component tree assignment; \emph{B.} The third constraint in ILP model \ref{eqn:cptree-ilp-st} for component tree assignment; \emph{C.} The DP model of component tree assignment.}
+\label{fig:treeassign-cptree}
+\end{figure}
+
+\subsubsection{Running time}
+With the less constrained recurrence, we will obviously get much better result with a higher mapping score then the original constrained version. However, the time complexity turns out to depend exponentially on the maximum degree of the two trees, namely
+\begin{equation} \label{eqn:lcdp-time}
+O\left(\sum_{u_i \in T_1, v_j \in T_2}(2^{|C(u_i)|}\cdot 2^{|C(v_j)|})\right).
+\end{equation}
+For binary trees, the running time will be
+$O(|T_1|\cdot|T_2)$.\\ 
+For component trees with higher vertex degrees, the running time will be 
+$O\left(2^{|C(r_1)|}\cdot2^{|C(r_2)|}\right)$.
+ 
+\subsubsection{Improving Running Time in Practice}
+The running time of the less constrained recurrence can be substantially improved in practice. To this end we first define the overlap between $A$ and $B$, where $A$ and $B$ are sets of connected area. We mean $A$ and $B$ have overlap that there exists some element in $A$ overlapping with some element in $B$, otherwise no overlap.
+
+When dealing with tree-assignments involving component trees, note that in practice many $A$ and $B$ have no overlap, or only few elements in $A$ overlap with few elements in $B$. The non-overlapping A and B can be neglected in the assignment. The overlapping A and B can be decomposed into disjoint subsets $A=A_0 \cup \ldots \cup A_n$ and $B = B_0 \cup \ldots \cup B_n$ such that $A_1 \cup B_1, \ldots, A_n \cup B_n$ are the connected components in graph $G(V, E)$ , that $V = A \cup B$ and $E = \{(a,b)|a \in A, b \in B, \beta(a) \cap \beta(b) \neq \emptyset\}$,  and $A_0$ and $B_0$ are the collection of isolated nodes of $A$ and $B$. As $A_0$ and $B_0$ can be neglected in the assignment, we have 
+\begin{equation*} \label{eqn:ldcp-decomp}
+W(A,B) = \sum_{k=1,\ldots,n}{W(A_k, B_k)}
+\end{equation*}
+In practice, $|A_k|$ and $|B_k|$ will be much smaller than $|A|$ and $|B|$, the running time will be much smaller, which speed up the algorithm significantly on many instances.
+\subsection{Difference between ILP and DP models}
+Integer linear programming (ILP) and dynamic programming (DP) provide two different implementations for component tree assignment. The DP model implements exactly the three point condition, three point condition fits the ILP model. However, ILP model doesn't always fit three point condition. Fig\ref{fig:treeassign-threepoint}A illustrates the match result in ILP which doesn't fit the three point condition. Fig\ref{fig:treeassign-threepoint2} shows the match difference between ILP and DP, where the segmentation results if ILP contain that of DP.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=1.0\textwidth]{images/treeassign_threepoint}
+\caption[Three point condition]{A. The difference between ILP and DP models, where DP fits exactly three point model, while ILP extends three point condition; B. The explanation of three point condition which is especially efficient when background gradient.}
+\label{fig:treeassign-threepoint}
+\end{figure}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=1.0\textwidth]{images/treeassign_threepoint2}
+\caption[ILP and DP result difference for microglia cell segmentation]{ILP and DP result difference for microglia cell segmentation, the red circles indicate the additional match result of ILP model.}
+\label{fig:treeassign-threepoint2}
+\end{figure}
+
+\subsection{An advanced model for cell dividing}
+During cell development, the cell may divide into two or more small cells. The above algorithms only tracks the movement of cells without cell dividing, as only one node in a tree is matched to only one node in the other tree. Both ILP model and DP model will loose the track of cells if cell dividing exists. (Usually no cell merging exists in practice.) We improve the linear tree assignment model that each node in one tree can be assigned to many nodes in the other tree. However, the constraint that only one node is assigned in a leaf-to-root-node path is kept. 
+
+Besides the binary variable $X_{uv}$, we introduce an another binary variable $Y_u$, given two trees $T_1$ and $T_2$ with vertex $u \in T_1$, $v \in T_2$. $X_{uv} = 1$ if node $u$ is assigned to node $v$, otherwise $X_{uv} = 0$. If node $u$ is assigned to any node in $T_2$, $Y_u = 1$; and $Y_u = 0$ if node $u$ is not assigned. The relationship between $Y_u$, and $X_{uv}$ is given by,
+\begin{equation}
+\label{eqn:split-model-yu}
+	Y_u = 
+	\left\{
+	\begin{array}{cc}
+		0 & \text{if \quad $\sum_{v \in T_2}X_{uv} = 0$} \\
+		1 & \text{if \quad $\sum_{v \in T_2}X_{uv} \ge 1$}
+	\end{array}
+	\right.
+	\quad \text{for $u \in T_1$}
+\end{equation}
+The constraint between $Y_u$ and $X_{uv}$ can be re-written as a constraint in integer linear programming. 
+By considering the condition that only one node is assigned for a leaf-node-to-root-node path, the integer linear model is given by
+\begin{alignat}{2}
+\nonumber
+    \text{maximize }   \\
+					   & \sum\limits_{i \in T_1}\sum\limits_{j \in T_2}w_{ij}X_{ij} \\
+\nonumber
+    \text{subject to } \\
+					   & X(u,v) \in  \{0,1\}                   & ,\ &\forall u\in T_1, v\in T_2  \\ 
+\label{con:split-model-yu1}
+					   & Y(u) \in  \{0,1\}                     & ,\ &\forall u\in T_1  \\ 
+\label{con:split-model-yu2}
+					   & Y_u \ge X_{uv}                        & ,\ &\forall u\in T_1, v\in T_2  \\
+\label{con:split-model-yu3}
+					   & Y_u \le \sum\limits_{v \in T_1}X_{uv} & ,\ &\forall u\in T_1 \\
+\label{con:split-model-path1}
+                       & \sum\limits_{u \in p}Y_u \le 1                           & ,\ &\forall p \in P(T_1) \\
+\label{con:split-model-path2}
+                       & \sum\limits_{u\in T_1}\sum\limits_{v \in p} X(u,v) \le 1 & ,\ &\forall p \in P(T_2)
+  \end{alignat}
+where constraints \ref{con:split-model-yu1}, \ref{con:split-model-yu2}, and \ref{con:split-model-yu3} realized the equantion \ref{eqn:split-model-yu} in the framework of integer linear programming; constraints \ref{con:split-model-path1} and \ref{con:split-model-path2} realized that only one node is match in a leaf-node-to-root path.
+
+\section{Neuron tree assignment}
+The trees in above tree assignment are topological structures. However, the tree could also be a real tree structure like neuron tree, where each node is a particle with absolute position. When aligning between neuron trees (see Fig.\ref{fig:treeassign-nt}A), the constraint of only one node match in a leaf-node-to-root-node is not necessary. To match the neuron trees, we apply a very loosely constraint that the matching between nodes should be in sequence order (see Fig.\ref{fig:treeassign-nt}B and Fig.\ref{fig:treeassign-nt}C). 
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=1.0\textwidth]{images/treeassign_nt}
+\caption[The alignment between neuron trees]{A. The alignment between neuron trees; B. The allowable matching in sequence order; C. The forbidden matching with reverse order.}
+\label{fig:treeassign-nt}
+\end{figure}
+
+\subsection{Two points condition}
+The match between neuron trees can be summarized as a two points condition. We defined the tree assignment matching $M \in$ match$(T_1,T_2)$ if for any two assignments $(a_1,a_2),(b_1,b_2) \in M$, we have
+$$
+a_1 \preceq b_1 \Rightarrow a_2 \preceq b_2
+$$
+
+\subsection{Integer linear programming}
+The two points condition can be implemented by integer linear programming. Given two neuron trees $T_1$ and $T_2$. For vertices $a\in T_1$, $c\in T_2$, we introduce a binary variable $X_{ac}$. The integer linear model is defined as,
+\begin{eqnarray}
+X_{ac} + X_{bd} \le 1  & \mbox{ if } a \prec b \mbox{ and } c \not\preceq d \mbox{ or } a \not\preceq b \mbox{ and } c \prec d
+\end{eqnarray}
+The target function is
+$$
+\max\sum w_{ac} X_{ac}
+$$
+\subsection{Dynamic programming algorithms}
+For vertex $u \in T$, define $T(u)$ as the subtree rooted from $u$; define $C(u)$ as the child nodes of $u$; define $F(u)$ as the forest with trees rooted from $C(u)$. For forest $A$, define $R(A)$ as the root nodes of the trees in $A$. For forests $A$ and $B$, define $w(A,B)$ as the maximum matching score between $A$ and $B$. To solve the neuron tree assignment under two points condition, we have the following formulas.
+\begin{equation} \label{eqn:nt-wTT}
+w(T(a), T(b)) = w(a,b) + \max\left\{ \begin{array}{l}
+                    w(T(a), F(b)) \\
+					w(F(a), T(b))
+					\end{array} \right.
+\end{equation}
+\begin{equation}\label{eqn:nt-wTB}
+w(T(a), B) = \max\left\{ \begin{array}{l}
+                    \max_{b_j \in R(B)}w(T(a), T(b_j)) \\
+	                w(F(a), B)
+			     \end{array} \right.
+\end{equation}
+\begin{equation}\label{eqn:nt-wAT}
+w(A, T(b)) = \max\left\{ \begin{array}{l}
+                  \max_{a_i \in R(A)} w(T(a_i), T(b))\\
+				  w(A, F(b))
+				  \end{array} \right.
+\end{equation}
+\begin{equation}
+w(A,B) = \max\left\{ \begin{array}{llcl}
+			 \max_{a_i \in R(A), b_j \in R(B)} & w(T(a_i), T(b_j)) & + & w(A-a_i, B-b_j) \\
+			 \max_{a_i \in R(A), B' \subset B} & w(F(a_i), B') & + & w(A-a_i, B-B') \\
+			 \max_{A' \subset A, b_j \in R(B)} & w(A', F(b_j)) & + & w(A-A', B-b_j)
+	\end{array} \right.
+\end{equation}
+By combining Eqn .(\ref{eqn:nt-wTT}), Eqn .(\ref{eqn:nt-wTB}), and Eqn .(\ref{eqn:nt-wAT}), we have
+\begin{equation}
+w(T(a), T(b)) = w(a,b) + \max\left\{ \begin{array}{l}
+                    \max_{a_i \in C(a)} w(T(a_i), T(b)) \\
+                    \max_{b_j \in C(b)} w(T(a), T(b_j)) \\
+					w(F(a), F(b))
+					\end{array} \right.
+\end{equation}
+
+\subsection{The difference between ILP and DP model}
+For neuron tree assignment, the ILP model and DP model will yield equivalent result. The running time for integer linear programming is exponential. And the running time for dynamic model is the same to Eqn .(\ref{eqn:lcdp-time}). As the neuron tree is usually binary tree, the running time for DP is nearly linear $O(|T_1|\cdot|T_2|)$.

@@ -1,0 +1,45 @@
+\documentclass[b5,12pt]{report}
+\usepackage{graphicx}
+\usepackage{multirow} % used in multi-row table
+\usepackage{color} % set color for text
+\usepackage[margin=1in]{geometry}  % set margin size
+\usepackage[linesnumbered,boxed]{algorithm2e}  % display algorithm
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{hyperref} % add link for tableofcontents
+\linespread{1.5}
+\usepackage{anysize}
+\usepackage{rotating}
+\usepackage{threeparttable} % for tablenotes
+
+\marginsize{3cm}{2cm}{1.2cm}{1.2cm} % need package anysize
+\setcounter{secnumdepth}{3} % set the section depth
+\setcounter{tocdepth}{2}
+%\title{Computational Methods for the Morphological Analysis of Neural Structures}
+\title{Computational Methods for the Microglia Cell Tracking and Neuron Morphological Analysis}
+\begin{document}
+\maketitle
+\begin{abstract}
+ This is cool paper about tracking.
+\end{abstract}
+\renewcommand{\abstractname}{Acknowledgements}
+\begin{abstract}
+ Thanks Mum!
+\end{abstract}
+
+\tableofcontents
+\listoffigures
+\part{Thesis overview}
+\input{chapter_intro}
+\part{Cell Tracking}
+\input{chapter_imgseg} % chapter1: image segmentation
+\input{chapter_cptree} % chapter2: component tree
+\input{chapter_treeassign} % chapter3: Tree assignment methods
+\input{chapter_coseg} % chapter4: cell tracking methods
+\part{Neuron Tracing}
+\input{chapter_fm}
+\input{chapter_autont}
+\bibliographystyle{plain}
+\bibliography{thesis}
+
+\end{document}

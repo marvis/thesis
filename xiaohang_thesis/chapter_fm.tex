@@ -1,0 +1,142 @@
+\chapter{Fast marching method} \label{chpt:fm}
+Fast marching(FM) method \cite{sethian1999level} plays a very important part in both automatic neuron tracing (APP2 method) and human-guided neuron tracing. It is essentially a region-growing scheme and can be used for GSDT and initial neuron reconstruction in APP2 and finding shortest path between rays in human-guided neuron tracing.
+\section{Introduction}
+\subsection{Algorithm flow}
+In FM, we model an image as a graph, where each graph vertex corresponds to an image pixel (voxel). There is an edge between each pair of immediately neighboring pixel-vertices. FM grows the image graph from a set of predefined seed vertices to all remaining image pixel-vertices in a distance-increasing order.  All image pixels are divided into three groups, labeled as \emph{ALIVE}, \emph{TRIAL} and \emph{FAR}. 
+
+FM has two main steps: initialization and recursion. First, all the seed vertices are initialized to be \emph{ALIVE}; the neighbors of seeds are initialized as \emph{TRIAL}; and the rest are set as \emph{FAR}. Then, from the set of \emph{TRIAL} vertices, we will extract one vertex x, which has the minimum distance value to the \emph{ALIVE} set. The extracted vertex x is then converted from \emph{TRIAL} to \emph{ALIVE}.  For any non-\emph{ALIVE} neighbor y of x, we set it to \emph{TRIAL} if it is \emph{FAR}. The distance function of y is updated as (also see below for concrete definitions)
+\begin{equation}
+d(y)=\min⁡{d(y),d(x)+e(x,y)}
+\end{equation}
+
+where $e(x,y)$ is the distance between vertex $x$ and vertex $y$ (see below for definition of $e(x,y)$). FM recursively extracts the vertex that has the minimum-distance from the \emph{TRIAL} set until it becomes empty.
+An important implementation trick of FM is to maintain \emph{TRIAL} vertices in a Fibonacci heap so that the required minima can be obtained efficiently. See Alg.\ref{alg:fast-marching} for the algorithm flow of FM.
+
+\begin{algorithm}[H]
+\label{alg:fast-marching}
+\SetKwInOut{Input}{Input}\SetKwInOut{Output}{Output}
+\SetAlgoLined
+\Input{seed points $x_0,x_1,\ldots,x_n$}
+\Output{Return distance map $d(x)$}
+Initialize distance map $d(x) = \infty$ for all point and mark as \emph{FAR} \;
+Initialize $d(x_0),d(x_1),\ldots,d(x_n)$ to $0$ and mark it as \emph{ALIVE} \;
+Initialize queue of \emph{TRIAL} points $Q = \O$ \;
+Mark \emph{FAR} neighbors of \emph{ALIVE} points as \emph{TRIAL} (add to $Q$) and update $d$ \;
+\While{Q is not empty}{
+Remove minimum point $x$ from $Q$, mark $x$ as \emph{ALIVE}\;
+Mark \emph{FAR} neighbors of $x$ as \emph{TRIAL} and insert into $Q$\; 
+Update $d$ for the neighbors of $x$\;
+}
+\caption{Fast marching algorithm}
+\end{algorithm}
+
+\subsection{Differnce from dijkstra's algorithm}
+In general, fast marching method is the same to Dijkstra's algorithm except that FM applys dynamic weight function. In fast marhcing method, the weight for each edge can be calculate when the edge is under marching.
+\section{Applications}
+Fast marching method can be applied to many bio-image processing according to the number of seed points, the definition of edge length $e(v_0,v_1)$ and the output information. The number of seed points for fast marching can be single or multiple. The edge length $e(v_0,v_1)$ can be defined as,
+$$
+e(v_0,v_1) = \left\{ 
+    \begin{array}{lr}
+    ||v_0 - v_1|| & \mbox{Euclidean distance (1)} \\
+    \\
+    ||v_0 - v_1|| \cdot (g_I(v_0) + g_I(v_1))/2 & \mbox{Geodesic distance (2)} \\
+    \\
+    ||v_0 - v_1|| \cdot (I(v_0) + I(v_1))/2 & \mbox{Image intensity (3)} \\
+    \\
+    f(v_0,v_1) & \mbox{other distance (4)}
+    \end{array}
+    \right.
+$$
+In the right column, $I(v)$ is image intensity at location $v$, $g_I(v)$ is expontial to image intensity $I(v)$, $f(v_0,v_1)$ is predefined distance map. The output information after fast marching may be distance map or parental map.  The related applications is classfied in tab.\ref{tab:fm-app}.\\
+
+\begin{table}
+\begin{center}
+\begin{tabular}{ | c | c | c | c |}
+    \hline
+    \textbf{Application} & \textbf{Num of seeds} & \textbf{Edge length} & \textbf{Output} \\ \hline
+    neuron reconstruction & single & geodesic distance & parental map \\ \hline
+    GSDT & multiple & image intensity & distance map  \\ \hline
+    3D curve drawing & multiple & geodesic distance & both \\ \hline
+    Voronoi diagram & multiple & euclidean distance & parental map  \\ \hline
+    seeded watershed & multiple & predefined & parental map \\ \hline
+  \end{tabular}
+\end{center}
+\caption{This table shows some data}
+\label{tab:fm-app}
+\end{table}
+
+\subsection{3D curve drawing}
+\label{sect:fm-3dcurve}
+Draw 3D curve is a post-processing step to correct the tracing errors during automatic neuron tracing \cite{peng2011automatic, Xiao:2011}. VAA3D \cite{peng2010v3d} provides a solution to select a 3D marker by one or two mouse click(s). However, it is not realistic to choose 3D markers one by one to draw a 3D curve. The convinient operation is to draw a 3D curve on 2D projection plane directly. Accuately, a drawing curve on 2D projection plane is lots of parallel sampling rays (see Figure \ref{fig:fm-dynamic-drawing}A), which are perpendicular to the projection plane. There exist lots of potiential 3D curves corresponding to the drawing curve. To get the exact 3D curve that we want, one possible solution is to draw the 3D curve twice from different views and then we find the intersection points. However, this is not a perfect solution as it needs too many drawing operations.
+
+To find the 3D curve (see Figure \ref{fig:fm-dynamic-drawing}B) that is exactly what we want,  VAA3D provides some solutions for the problem. The main idea in VAA3D is to estimate the 3D position for each sampling ray by using meanshift \cite{comaniciu2002mean} algorithm. However, for complex background noise, meanshift may fail to find the correct 3D position(see Figure \ref{fig:fm-meanshift-drawing}B), as meanshift will attract to local maximum center when strong background noise exists. 
+
+Here, we provide a method to solve curving drawing problem, which contains two novel ideas. First idea is to find the shortest path between two rays, which is solved under fast marching framework. Second idea is to find the shortest path that accross all sampling rays, which is assumed to be the expected 3d drawing curve.
+
+\subsubsection{Shortest path between two rays}
+This problem can be perfectly sovled by fastmarching method. Assume we draw the curve from subject ray to target ray. Firstly, all the vertices on the subject ray will be used as seed points. Then marching from the seed points until all vertices on the target ray are marched. From the resulting distance tree, we can easily get the shortest path by reverse from each vertex on the target ray until the first vertex on the source ray is visited. In practice, there is no need to march all vertices on the target ray; normally when 50\% vertices are marched, the marching process can stop.
+
+The length between consective vertices (or points) $v_0$ and $v_1$ is defined as, 
+$$
+e(v_0,v_1) = ||v_0 - v_1||\cdot \left( \frac{g_I(v_0) + g_I(v_1)}{2} \right)
+$$
+which is the geodestic distance widely used in neuron tracing \cite{peng2010automatic, peng2011automatic}. $g_I(v_i)$ on the right item is defined as ,
+$$
+g_I(v_i) = exp(\lambda_I(1-I(v_i)/I_{max})^2)
+$$
+where $I(v_i)$ is the intensity of vertex $v_i$ and $I_{max}$ is the maximum intensity of the entire image $I$. So the edge length between bright points will be very small, which ensure the shortest path go accross the continuous bright points as much as possible.
+
+\textbf{Extension:} The method for finding the shortest path between two rays is easily extended to finding shortest path between two groups of any points. The rays above is not restricted to parallel rays.
+
+\subsubsection{Shortest path between multiple rays}
+Like the shortest path between two rays, there exist a shortest path that connect multiple rays. One way to connect multiple rays is to simply connect consecutive rays by the shortest path between them. For each non-start/non-end ray, there are two shortest paths connect to it. The problem arises that the two shortest paths are mostly probably not connected, that we still need to connect the two shortest paths which increase the total cost. To solve the problem of disconnected shortest paths, we can use the end point of last shortest path as the start point of the next shortest path instead of starting from a whole ray.
+
+The above suggestions may find a good path but not the global shortest path. To find the global shortest path, we proposed the following steps.
+\begin{itemize}
+\item[a.] find all shortest path from first ray to each vertex on the second ray
+\item[b.] keep the distance value on the second ray and find the shortest path from the second ray to each vertex on the third ray
+\item[c.] iterate the above step until the last ray is reached
+\end{itemize}
+
+Usually we don't need to assure all vertices on a ray are reached, as some vertices are very time consuming to reach. In practice, we set 50\% vertices reached  to start the next iteration.
+\subsubsection{Further optimization for multiple rays}
+The abolve global shortest path is not always good when the sampling ray deviated to background (see Figure \ref{fig:fm-dynamic-compare}C). Actually, the sampling ray should be used as a reference to indicate that the 3D curve should near to the ray. For consective rays, we can set a bounding box. So we can change the model as the 3D curve is the shortest path from the first ray to the last ray by accrossing the boudingboxes between consective rays (see Figure \ref{fig:fm-dynamic-compare}B). We can see the different drawing results with same sampling rays, Fig.\ref{fig:fm-dynamic-compare}C for original model and Fig.\ref{fig:fm-dynamic-compare}D for improved model. The original model may produce lots of spurs near sampling rays while the impoved model produces much smoother result.
+%\includegraphics{2_dynamic.pdf}
+
+\begin{figure}[htb]
+\begin{center}
+\includegraphics[width=5in]{images/fm_meanshift_drawing}
+\caption{(A) meanshift based curve drawing. (B) error occured on noisy background}
+\label{fig:fm-meanshift-drawing} % \lable should be after \caption
+\end{center}
+\end{figure}
+
+\begin{figure}[htb]
+\begin{center}
+\includegraphics[width=4in]{images/fm_dynamic_drawing}
+\caption{(A) sampling rays. (B) expected 3D curve. (C) the process of global optimized model}
+\label{fig:fm-dynamic-drawing}
+\end{center}
+\end{figure}
+
+\begin{figure}[htb]
+\begin{center}
+\includegraphics[width=5in]{images/fm_dynamic_compare}
+\caption{(A) global optimized model. (B) improved bounding-box model (C) the result or original model. (D) the result of improved model}
+\label{fig:fm-dynamic-compare}
+\end{center}
+\end{figure}
+\subsection{Gray-weighted distance transform}
+Normally, the distance transform is perform on binary image. The distance for each foreground point is the minimum euclidean distance to background. To perform distance transform on grayscale image, we can define the distance for each foreground point as the length of its shortest path to background. The length of a path is the sum of gray value of the point on the path. This idea is called gray-weighted distance transform (GWDT) \cite{rutovitz1968data}. To implement this idea, we need to use fast marching method and dynamic programming, for the detail of GWDT, see section \ref{sec:gwdt}.
+
+\subsection{Generalized Voronoi diagram for shapes} \label{subsec:gvd}
+In image processing, a Voronoi diagram \cite{aurenhammer1991Voronoi} is a special kind of decomposition of an image, determined by distances to a group of specified objects. These objects can be many seed points (Figure \ref{fig:fm-Voronoi}A) normally or many cell bodies (Figure \ref{fig:fm-Voronoi}B). The Voronoi Diagram for cell bodies is also called Generalized Voronoi Diagram (GVD) \cite{nath2007accurate}. The decomposted image areas are Voronoi areas. Each Voronoi area is a group of points whose nearest object are the same. Voronoi Diagram can be found in a large number of fields in science and technology, even in art.\\
+There are lots of algorithms proposed to solve the Normal Voronoi Diagram. Lloyd \cite{lloyd1977triangulations} firstly consider the problem as a k-means clustering problem. A more efficent algorithm for generating a Voronoi Diagram in a plane is proposed by Fortune \cite{fortune1987sweepline} in $O(nlog(n))$ time. The method need to scan the image from left to right with a sweep line. For higher dimension image, Bowyer Watson \cite{rebay1993efficient} proposed a method to solve the complementary problem Delaunay triangulation in any number of dimensions. However, these algorithms only solve the Normal Voronoi Diagram problem. For the Generalized Voronoi Diagram problem, there isn't efficient methods \cite{hoff1999fast, takahashi1989motion, nath2007accurate}. Actually either normal Voronoi diagram or generalized Voronoi diagram problems can be considered as a shortest path problem by growing seed points or cell bodies to nearest area. It is a fast marching problem. The only thing we need to do is labeling each object with unique lable. Each pixel will be labeled the same to its nearest object.
+
+\begin{figure}[htb]
+\begin{center}
+\includegraphics[width=4in]{images/fm_voronoi}
+\caption[Normal Voronoi diagram and generalized Voronoi diagram]{(A) sampling rays. (B) expected 3D curve. (C) the process of global optimized model}
+\label{fig:fm-Voronoi}
+\end{center}
+\end{figure}
