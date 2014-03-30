@@ -1,8 +1,9 @@
 \chapter{Co-segmentation based cell tracking} \label{chpt:coseg}
+Cell tracking is an important method to quantitatively analyze time-lapse microscopy data. While numerous methods and tools exist for tracking cells in 2D time-lapse images, only few and very application-specific tracking tools are available for 3D time- lapse images, which is of high relevance in immunoimaging, in particular for studying the motility of microglia in vivo.
 
-\textbf{Motivation:} Cell tracking is an important method to quantitatively analyze time-lapse microscopy data. While numerous methods and tools exist for tracking cells in 2D time-lapse images, only few and very application-specific tracking tools are available for 3D time- lapse images, which is of high relevance in immunoimaging, in particular for studying the motility of microglia in vivo.\\
-\textbf{Results:} We introduce a novel algorithm for tracking cells in 3D time-lapse microscopy data, based on computing cosegmentations between component trees representing individual time frames using the so-called tree-assignments. For the first time, our method allows to track microglia in three dimensional confocal time-lapse microscopy images. We also evaluate our method on synthetically generated data, demonstrating that our algorithm is robust even in the presence of different types of inhomogeneous background noise.\\
-\textbf{Availability:} Our algorithm is implemented in the ct3d package, which is available under http://www.picb.ac.cn/patterns/Software/ ct3d; supplementary videos are available from http://www.picb.ac. cn/patterns/Supplements/ct3d.
+We introduce a novel algorithm for tracking cells in 3D time-lapse microscopy data, based on computing cosegmentations between component trees representing individual time frames using the so-called tree-assignments. For the first time, our method allows to track microglia in three dimensional confocal time-lapse microscopy images. We also evaluate our method on synthetically generated data, demonstrating that our algorithm is robust even in the presence of different types of inhomogeneous background noise.
+
+Parts of this chapter follow closely the presentation from \cite{Xiao:2011}, where results of this thesis have been published.
 
 \section{Introduction}
 
@@ -61,8 +62,7 @@ has attracted considerable attention recently
     an induced injury and migrates along a trajectory (orange line:
     trajectory obtained by \texttt{ct3d}; blue line: trajectory
     obtained from manual annotation) towards a site of injury (purple
-    dot); see Supplementary Video 1 for a rendered animation of the
-    same data.}
+    dot);}
   \label{fig:coseg-fig1}
 \end{figure}
 
@@ -276,8 +276,7 @@ summarized in Table \ref{tab:coseg-tab1} and indicate that
 \texttt{ct3d} is highly robust against different types and intensities
 of background inhomogeneities. The results suggest that \texttt{ct3d}
 has a tendency to identify components slightly (about 10\%) larger
-than the actual objects, as can also be seen in the sample output in
-Supplementary Video 3. This is a natural consequence of pruning the
+than the actual objects. This is a natural consequence of pruning the
 component trees, where the vertex that would perfectly represent an
 object is unlikely to be part of the pruned tree. This effect can be
 reduced by smaller choice for the single-node cutoff parameter
@@ -368,7 +367,7 @@ to the involvement of a global background model.
 
 \begin{figure}[htbp]
 \centering
-\includegraphics[width=1.0\textwidth]{images/coseg_fig6}
+\includegraphics[width=0.6\textwidth]{images/coseg_fig6}
 \caption[Cosegmentation results comparison with other methods]{Top: visualization of trajectories obtained by manual annotation (blue lines) with trajectories obtained using ct3d (orange lines) for microglia in activated state, see (a) and (b), as well as resting state, see (c) and (d). Bottom: quantitative comparison of trajectories obtained by ct3d and the active contour approach from Chan and Vese \cite{chan2001active}. In general, ct3d could identify the annotated cells in all time frames. The root mean square distance to the annotated trajectory measures a fraction of the diameter of the annotated cell (columns cell $\Delta$ and RMS), while the Chan–Vese algorithm missed varying numbers of cells or failed completely (last column). For the Chan–Vese results, a parameter set was optimized for dataset (a). This parameter set ($\mu$=1, $\nu$=.5, $\lambda_1$=.2, $\lambda_2$=5) was also applied to datasets (b) to (d). While for dataset (a), the result is comparable to ct3d, the annotated cell was identified in only 29 out of 49 time frames in (b). In datasets (c) and (d), the annotated cell could not be identified at all using these parameters.}
 \label{fig:coseg-fig6}
 \end{figure}
@@ -411,8 +410,7 @@ affected by a sudden ``frameshift'', i.e., the sample changing its
 distance to the camera in the $z$ direction, leading to interrupted
 trajectories at the corresponding time frame. In few other cases, the
 trajectory of a microglia was interrupted in individual frames, which
-we could correct using \texttt{at3d}. Examples of the final results
-are given in Supplementary Videos 1 and 2.
+we could correct using \texttt{at3d}.
 
 In order to quantitatively evaluate the quality of \texttt{ct3d}
 results on \textit{in-vivo} microglia data, we compared \texttt{ct3d}
@@ -491,5 +489,7 @@ concepts might be particularly useful when combining component trees
 with cosegmentation for judging the relevance of colocalized segments
 observed when comparing two component trees.
 
-
-
+\section{Contribution of this thesis}
+In this thesis, we build a cosegmentation based pipeline for 3D time-lapse microglia cell tracking.
+The novel cosegmentation methods accomplish cell segmentation and cell association simutaneously through 
+component tree assignment. We evalute our method on synthetically generated data, demonstrating that our algorithm is robust even in the presence of different types of inhomogeneous background noise. Our algorithm is implemented in the ct3d package, which is available under http://www.picb.ac.cn/patterns/Software/ct3d.

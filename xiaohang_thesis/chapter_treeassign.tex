@@ -207,3 +207,6 @@ w(T(a), T(b)) = w(a,b) + \max\left\{ \begin{array}{l}
 
 \subsection{The difference between ILP and DP model}
 For neuron tree assignment, the ILP model and DP model will yield equivalent result. The running time for integer linear programming is exponential. And the running time for dynamic model is the same to Eqn .(\ref{eqn:lcdp-time}). As the neuron tree is usually binary tree, the running time for DP is nearly linear $O(|T_1|\cdot|T_2|)$.
+
+\section{Contribution of this thesis}
+In this thesis, I implemented two kinds of tree assignment methods, that is, integer linear programming based tree assignment and dynamic programming based tree assignment. I compared the different running results between the two methods, which is due to the three point contraint. Further more, I extend the application of tree assignment to neuron tree assignment with both integer linear programming and dynamic programming version, which obeys the two point condition.

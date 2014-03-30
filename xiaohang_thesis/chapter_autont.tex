@@ -1,10 +1,12 @@
 \chapter{Hierarchical pruning based automatic neuron tracing methods} \label{chpt:auto-nt}
-In this chapter we focus on neuron tracing for 3D light-microscopic images (often confocal or multi-photon laser scanning microscopic images). Taking a 3D gray-scale image as the input, a neuron tracing method produces the digital representation of the morphology of the neuron(s) in this image.
+In this chapter, we focus on neuron tracing for 3D light-microscopic images taken by confocal or multi-photon laser scanning microscopic. Taking a 3D gray-scale image as the input, a neuron tracing method produces the digital representation of the morphology of the neuron(s) in this image.
 
 \section{Background}
 \subsection{Diadem challenge}
-The shape of neuron is much related to neuronal function. Due to the lack of efficient tools and method, the shape of neurons are mostly obtained manually. To raise awareness of the problem of automated neuronal reconstruction, a competition for neuron reconstruction is set up by the Allen institue for Brain Science and the Janelia Farm Research Campus of the Howard Huges Medical Institute (HHMI). It is called Diadem Challenge.
+The shape of neuron is much related to neuronal function. Due to the lack of efficient tools and method, the shape of neurons are mostly obtained manually. To raise awareness of the problem of automated neuronal reconstruction, a competition, namely Diadem Challenge, for neuron reconstruction is set up by the Allen institue for Brain Science and the Janelia Farm Research Campus of the Howard Huges Medical Institute (HHMI). 
 \subsection{APP1 method}
+Automation of neuron tracing for complex neuron morphology and low quality image data is discussed in the All-Path-Pruning (APP) method \cite{peng2011automatic}. The key idea of APP is to generate an initial reconstruction that covers all the potential signal of a neuron in a 3D image, followed by a linear-time pruning of unneeded branches until a least compact representation is produced while the coverage of all neuronal signal is maintained.
+
 \section{APP2 method}
 \subsection{Overview of APP2}
 In many previous studies, the 3D reconstructed morphology of a neuron is described using a tree graph $G$.  $G$ has a root node that corresponds to the seed location for reconstruction, which in many cases also corresponds to the soma of a neuron. $G$ may also contain many leaf nodes, branching nodes and other internodes.
@@ -201,3 +203,5 @@ The 629 successfully traced neurons (Fig. \ref{fig:autont-fig4}e) make up one of
 
 \section{Conclusion}
 We present a new neuron tracing system that contains several novel algorithms based on fast marching and hierarchical pruning. We use the fast marching method to compute both the initial neuron reconstruction and the gray-weighted distance transform, and at the same time also improve the robustness of neuron tracing. Hierarchical pruning sorts the individual segments of an initial reconstruction tree in a hierarchical order, thus facilitates efficient removal of redundant segments in the reconstruction. We have compared our new method to various previous methods on a number of datasets and found a better performance of the new method in most cases. 
+
+\section{Contribution of this thesis}

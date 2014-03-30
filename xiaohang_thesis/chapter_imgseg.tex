@@ -79,7 +79,7 @@ Find the threshold correspond to the maximum $\sigma_b^2(t)$
 \label{alg:otsu-thresh}
 \end{algorithm}
 \subsection{Local thresholding method}
-The major problem with global thresholding is that it considers only the intensity, not any relationships between the pixels or any local characteristic. For example global thresholding can't handle changing illumination. It can give poor results for certain types of images. And the pixels identified by the thresholding process are not at all continuous. By applying a local thresholding approach, we can overcome some of the problems.
+Local thresholding method adapt the threshold value on each pixel to the local image characteristics \cite{kallergi1992image}, e.g. local average intensity and local intensity variance. The major problem with global thresholding is that it considers only the intensity, not any relationships between the pixels or any local characteristic. For example global thresholding can't handle changing illumination. It can give poor results for certain types of images. And the pixels identified by the thresholding process are not at all continuous. By applying a local thresholding approach, we can overcome some of the problems.
 
 Local thresholding divides an image into sub-images by a sliding window. For each sub-image, we find its global threshold. If the region is constant, consider it against a global threshold (all black or white). If there is sufficient variance, use Otsu/Iterative method in the window. 
 

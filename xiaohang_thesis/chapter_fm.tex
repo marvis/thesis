@@ -1,6 +1,6 @@
-\chapter{Fast marching method} \label{chpt:fm}
-Fast marching(FM) method \cite{sethian1999level} plays a very important part in both automatic neuron tracing (APP2 method) and human-guided neuron tracing. It is essentially a region-growing scheme and can be used for GSDT and initial neuron reconstruction in APP2 and finding shortest path between rays in human-guided neuron tracing.
-\section{Introduction}
+\chapter{Fast marching method and human-guided neuron tracing} \label{chpt:fm}
+Fast marching(FM) method \cite{sethian1999level} is a region-growing based method, which was originally proposed for solving the initialization of level set function. However, in this these, we will introduce the great roles of fast marching in both automatic neuron tracing (APP2 method) and human-guided neuron tracing (also named as 3D curve drawing). Fast marching method can be used for Grayscale Distance Transform (GSDT) and neuron reconstruction initialization for automatic neuron tracing and finding shortest path between rays for human-guided neuron tracing.
+\section{Fast marching method}
 \subsection{Algorithm flow}
 In FM, we model an image as a graph, where each graph vertex corresponds to an image pixel (voxel). There is an edge between each pair of immediately neighboring pixel-vertices. FM grows the image graph from a set of predefined seed vertices to all remaining image pixel-vertices in a distance-increasing order.  All image pixels are divided into three groups, labeled as \emph{ALIVE}, \emph{TRIAL} and \emph{FAR}. 
 
@@ -30,9 +30,9 @@ Update $d$ for the neighbors of $x$\;
 \caption{Fast marching algorithm}
 \end{algorithm}
 
-\subsection{Differnce from dijkstra's algorithm}
+\subsection{Differnce from Dijkstra's algorithm}
 In general, fast marching method is the same to Dijkstra's algorithm except that FM applys dynamic weight function. In fast marhcing method, the weight for each edge can be calculate when the edge is under marching.
-\section{Applications}
+\subsection{Applications of fast marching method}
 Fast marching method can be applied to many bio-image processing according to the number of seed points, the definition of edge length $e(v_0,v_1)$ and the output information. The number of seed points for fast marching can be single or multiple. The edge length $e(v_0,v_1)$ can be defined as,
 $$
 e(v_0,v_1) = \left\{ 
@@ -65,7 +65,7 @@ In the right column, $I(v)$ is image intensity at location $v$, $g_I(v)$ is expo
 \label{tab:fm-app}
 \end{table}
 
-\subsection{3D curve drawing}
+\section{Human-guided neuron tracing}
 \label{sect:fm-3dcurve}
 Draw 3D curve is a post-processing step to correct the tracing errors during automatic neuron tracing \cite{peng2011automatic, Xiao:2011}. VAA3D \cite{peng2010v3d} provides a solution to select a 3D marker by one or two mouse click(s). However, it is not realistic to choose 3D markers one by one to draw a 3D curve. The convinient operation is to draw a 3D curve on 2D projection plane directly. Accuately, a drawing curve on 2D projection plane is lots of parallel sampling rays (see Figure \ref{fig:fm-dynamic-drawing}A), which are perpendicular to the projection plane. There exist lots of potiential 3D curves corresponding to the drawing curve. To get the exact 3D curve that we want, one possible solution is to draw the 3D curve twice from different views and then we find the intersection points. However, this is not a perfect solution as it needs too many drawing operations.
 
@@ -126,6 +126,7 @@ The abolve global shortest path is not always good when the sampling ray deviate
 \label{fig:fm-dynamic-compare}
 \end{center}
 \end{figure}
+\section{Other applications of fast marching method}
 \subsection{Gray-weighted distance transform}
 Normally, the distance transform is perform on binary image. The distance for each foreground point is the minimum euclidean distance to background. To perform distance transform on grayscale image, we can define the distance for each foreground point as the length of its shortest path to background. The length of a path is the sum of gray value of the point on the path. This idea is called gray-weighted distance transform (GWDT) \cite{rutovitz1968data}. To implement this idea, we need to use fast marching method and dynamic programming, for the detail of GWDT, see section \ref{sec:gwdt}.
 
@@ -136,7 +137,9 @@ There are lots of algorithms proposed to solve the Normal Voronoi Diagram. Lloyd
 \begin{figure}[htb]
 \begin{center}
 \includegraphics[width=4in]{images/fm_voronoi}
-\caption[Normal Voronoi diagram and generalized Voronoi diagram]{(A) sampling rays. (B) expected 3D curve. (C) the process of global optimized model}
+\caption[Normal Voronoi diagram and generalized Voronoi diagram]{(A)The normal Voronoi diagram for discrete points. (B) The generalized Voronoi diagram for discrete areas.}
 \label{fig:fm-Voronoi}
 \end{center}
 \end{figure}
+
+\section{Contribution of this thesis}
